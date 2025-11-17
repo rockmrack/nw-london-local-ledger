@@ -1,0 +1,125 @@
+# NW London Local Ledger - Git Ignore File
+
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp
+.pnp.js
+
+# Production
+/build
+/dist
+/.next/
+/out/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+
+# API Keys and Secrets
+*.key
+*.pem
+credentials.json
+secrets/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+data/backups/
+data/dumps/
+
+# Testing
+/coverage
+/.nyc_output
+.jest-cache/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+.Spotlight-V100
+.Trashes
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.iml
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Scrapers and Data Processing
+scraped_data/temp/
+*.cache
+.scrapy/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.swp
+
+# Build tools
+.webpack/
+.parcel-cache/
+
+# Documentation build
+docs/_build/
+site/
+
+# Cache
+.cache/
+.eslintcache
+.stylelintcache
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Redis
+dump.rdb
+
+# Elasticsearch
+elasticsearch_data/
+
+# Docker
+docker-compose.override.yml
+.docker/
+
+# Local development
+.local/
