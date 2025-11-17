@@ -1,0 +1,329 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2024-01-20",
+  "sources": [
+    {
+      "id": "land-registry",
+      "name": "HM Land Registry",
+      "type": "api",
+      "category": "property",
+      "endpoints": {
+        "pricePaid": {
+          "url": "https://landregistry.data.gov.uk/app/ppd",
+          "method": "api",
+          "auth": "none",
+          "rateLimit": 10,
+          "cost": 0,
+          "license": "OGL v3.0"
+        },
+        "titleRegister": {
+          "url": "https://eservices.landregistry.gov.uk",
+          "method": "api",
+          "auth": "required",
+          "rateLimit": 5,
+          "cost": 3,
+          "costUnit": "per-title",
+          "license": "Commercial"
+        }
+      },
+      "compliance": {
+        "gdpr": true,
+        "attribution": "© Crown copyright and database rights",
+        "restrictions": ["No bulk downloads without agreement"]
+      },
+      "reliability": {
+        "uptime": 99.9,
+        "updateFrequency": "monthly",
+        "dataQuality": "official"
+      }
+    },
+    {
+      "id": "epc-register",
+      "name": "Energy Performance Certificate Register",
+      "type": "api",
+      "category": "energy",
+      "endpoints": {
+        "domestic": {
+          "url": "https://epc.opendatacommunities.org/api/v1/domestic",
+          "method": "api",
+          "auth": "api-key",
+          "rateLimit": 100,
+          "cost": 0,
+          "license": "OGL v3.0"
+        },
+        "nonDomestic": {
+          "url": "https://epc.opendatacommunities.org/api/v1/non-domestic",
+          "method": "api",
+          "auth": "api-key",
+          "rateLimit": 100,
+          "cost": 0,
+          "license": "OGL v3.0"
+        }
+      },
+      "compliance": {
+        "gdpr": true,
+        "attribution": "Contains public sector information licensed under OGL v3.0",
+        "restrictions": []
+      },
+      "reliability": {
+        "uptime": 99.5,
+        "updateFrequency": "daily",
+        "dataQuality": "official"
+      }
+    },
+    {
+      "id": "police-api",
+      "name": "Police UK API",
+      "type": "api",
+      "category": "crime",
+      "endpoints": {
+        "streetLevel": {
+          "url": "https://data.police.uk/api/crimes-street/all-crime",
+          "method": "api",
+          "auth": "none",
+          "rateLimit": 15,
+          "cost": 0,
+          "license": "OGL v3.0"
+        },
+        "statistics": {
+          "url": "https://data.police.uk/api/crimes-no-location",
+          "method": "api",
+          "auth": "none",
+          "rateLimit": 15,
+          "cost": 0,
+          "license": "OGL v3.0"
+        }
+      },
+      "compliance": {
+        "gdpr": true,
+        "attribution": "Contains public sector information licensed under OGL v3.0",
+        "restrictions": ["Data may be incomplete or delayed"]
+      },
+      "reliability": {
+        "uptime": 99,
+        "updateFrequency": "monthly",
+        "dataQuality": "official"
+      }
+    },
+    {
+      "id": "tfl-api",
+      "name": "Transport for London Unified API",
+      "type": "api",
+      "category": "transport",
+      "endpoints": {
+        "stations": {
+          "url": "https://api.tfl.gov.uk/StopPoint",
+          "method": "api",
+          "auth": "api-key",
+          "rateLimit": 500,
+          "cost": 0,
+          "license": "TfL Terms"
+        },
+        "lines": {
+          "url": "https://api.tfl.gov.uk/Line",
+          "method": "api",
+          "auth": "api-key",
+          "rateLimit": 500,
+          "cost": 0,
+          "license": "TfL Terms"
+        }
+      },
+      "compliance": {
+        "gdpr": true,
+        "attribution": "Powered by TfL Open Data",
+        "restrictions": ["No scraping website", "API only"]
+      },
+      "reliability": {
+        "uptime": 99.5,
+        "updateFrequency": "real-time",
+        "dataQuality": "official"
+      }
+    },
+    {
+      "id": "barnet-council",
+      "name": "Barnet Council",
+      "type": "scraping",
+      "category": "planning",
+      "endpoints": {
+        "planning": {
+          "url": "https://publicaccess.barnet.gov.uk/online-applications",
+          "method": "scraping",
+          "auth": "none",
+          "rateLimit": 1,
+          "cost": 0,
+          "license": "OGL v3.0"
+        }
+      },
+      "compliance": {
+        "gdpr": true,
+        "robotsTxt": true,
+        "termsChecked": true,
+        "consentStatus": "implicit",
+        "attribution": "© Barnet Council",
+        "restrictions": ["Respect rate limits", "No commercial use without permission"]
+      },
+      "reliability": {
+        "uptime": 95,
+        "updateFrequency": "daily",
+        "dataQuality": "official"
+      },
+      "fallback": {
+        "method": "foi-request",
+        "template": "barnet-planning-foi"
+      }
+    },
+    {
+      "id": "brent-council",
+      "name": "Brent Council",
+      "type": "scraping",
+      "category": "planning",
+      "endpoints": {
+        "planning": {
+          "url": "https://pa.brent.gov.uk/online-applications",
+          "method": "scraping",
+          "auth": "none",
+          "rateLimit": 1,
+          "cost": 0,
+          "license": "OGL v3.0"
+        }
+      },
+      "compliance": {
+        "gdpr": true,
+        "robotsTxt": true,
+        "termsChecked": true,
+        "consentStatus": "implicit",
+        "attribution": "© Brent Council",
+        "restrictions": ["Respect rate limits"]
+      },
+      "reliability": {
+        "uptime": 95,
+        "updateFrequency": "daily",
+        "dataQuality": "official"
+      }
+    },
+    {
+      "id": "camden-council",
+      "name": "Camden Council",
+      "type": "scraping",
+      "category": "planning",
+      "endpoints": {
+        "planning": {
+          "url": "http://planningrecords.camden.gov.uk/Northgate/PlanningExplorer",
+          "method": "scraping",
+          "auth": "none",
+          "rateLimit": 1,
+          "cost": 0,
+          "license": "OGL v3.0"
+        }
+      },
+      "compliance": {
+        "gdpr": true,
+        "robotsTxt": true,
+        "termsChecked": true,
+        "consentStatus": "implicit",
+        "attribution": "© Camden Council",
+        "restrictions": ["Respect rate limits"]
+      },
+      "reliability": {
+        "uptime": 95,
+        "updateFrequency": "daily",
+        "dataQuality": "official"
+      }
+    },
+    {
+      "id": "ealing-council",
+      "name": "Ealing Council",
+      "type": "scraping",
+      "category": "planning",
+      "endpoints": {
+        "planning": {
+          "url": "https://pam.ealing.gov.uk/online-applications",
+          "method": "scraping",
+          "auth": "none",
+          "rateLimit": 1,
+          "cost": 0,
+          "license": "OGL v3.0"
+        }
+      },
+      "compliance": {
+        "gdpr": true,
+        "robotsTxt": true,
+        "termsChecked": true,
+        "consentStatus": "implicit",
+        "attribution": "© Ealing Council",
+        "restrictions": ["Respect rate limits"]
+      },
+      "reliability": {
+        "uptime": 95,
+        "updateFrequency": "daily",
+        "dataQuality": "official"
+      }
+    },
+    {
+      "id": "harrow-council",
+      "name": "Harrow Council",
+      "type": "scraping",
+      "category": "planning",
+      "endpoints": {
+        "planning": {
+          "url": "http://www.harrow.gov.uk/planningsearch",
+          "method": "scraping",
+          "auth": "none",
+          "rateLimit": 1,
+          "cost": 0,
+          "license": "OGL v3.0"
+        }
+      },
+      "compliance": {
+        "gdpr": true,
+        "robotsTxt": true,
+        "termsChecked": true,
+        "consentStatus": "implicit",
+        "attribution": "© Harrow Council",
+        "restrictions": ["Respect rate limits"]
+      },
+      "reliability": {
+        "uptime": 95,
+        "updateFrequency": "daily",
+        "dataQuality": "official"
+      }
+    },
+    {
+      "id": "westminster-council",
+      "name": "Westminster City Council",
+      "type": "scraping",
+      "category": "planning",
+      "endpoints": {
+        "planning": {
+          "url": "https://idoxpa.westminster.gov.uk/online-applications",
+          "method": "scraping",
+          "auth": "none",
+          "rateLimit": 1,
+          "cost": 0,
+          "license": "OGL v3.0"
+        }
+      },
+      "compliance": {
+        "gdpr": true,
+        "robotsTxt": true,
+        "termsChecked": true,
+        "consentStatus": "implicit",
+        "attribution": "© Westminster City Council",
+        "restrictions": ["Respect rate limits"]
+      },
+      "reliability": {
+        "uptime": 95,
+        "updateFrequency": "daily",
+        "dataQuality": "official"
+      }
+    }
+  ],
+  "preferences": {
+    "preferApi": true,
+    "fallbackToScraping": true,
+    "costThreshold": 100,
+    "costThresholdUnit": "GBP/month",
+    "complianceRequired": true,
+    "minimumReliability": 90
+  }
+}
