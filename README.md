@@ -1,8 +1,19 @@
-# NW London Local Ledger
+# Hampstead Renovations - NW London Property Data Platform
 
-## 🏘️ The Data-Driven Community Hub for North West London
+## 🏠 Your Trusted Partner for North West London Property Information
 
-The NW London Local Ledger is a comprehensive, data-rich community platform serving residents across NW1-NW11 postcodes. Our mission is to become the most trusted and useful resource for local property data, planning information, and community news in North West London.
+Powered by **Hampstead Renovations Ltd**, this comprehensive, data-driven platform provides property information, planning applications, and local area insights serving North West London (NW1-NW11 postcodes). Our mission is to deliver the most trusted and comprehensive property intelligence for NW London homeowners, developers, and investors.
+
+### Company Information
+
+**Hampstead Renovations Ltd**
+Unit 3, Palace Court
+250 Finchley Road
+London NW3 6DN
+
+📞 **Phone:** [07459 345456](tel:+447459345456)
+✉️ **Email:** [contact@hampsteadrenovations.co.uk](mailto:contact@hampsteadrenovations.co.uk)
+🌐 **Website:** [www.hampsteadrenovations.co.uk](https://www.hampsteadrenovations.co.uk)
 
 ## Vision
 
@@ -117,12 +128,19 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 ## License
 
-This project is proprietary software. All rights reserved.
+This project is proprietary software. © 2025 Hampstead Renovations Ltd. All rights reserved.
 
-## Support
+## Support & Contact
 
-For questions or support, please contact the development team.
+For questions, support, or inquiries about our property data services:
+
+**Hampstead Renovations Ltd**
+- 📍 Unit 3, Palace Court, 250 Finchley Road, London NW3 6DN
+- 📞 Phone: [07459 345456](tel:+447459345456)
+- ✉️ Email: [contact@hampsteadrenovations.co.uk](mailto:contact@hampsteadrenovations.co.uk)
+- 🌐 Website: [www.hampsteadrenovations.co.uk](https://www.hampsteadrenovations.co.uk)
 
 ---
 
-**Note**: This is not a Hampstead Renovations branded site. It operates as an independent community resource for North West London residents.
+**Hampstead Renovations** - Your Trusted Partner for North West London Property Information
+© 2025 Hampstead Renovations Ltd. All rights reserved. | [Privacy Policy](/privacy) | [Terms of Service](/terms) | [Cookie Policy](/cookies)

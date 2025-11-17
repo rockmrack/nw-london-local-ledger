@@ -1,0 +1,72 @@
+{
+  "name": "Hampstead Renovations",
+  "legalName": "Hampstead Renovations Ltd",
+  "address": {
+    "line1": "Unit 3, Palace Court",
+    "line2": "250 Finchley Road",
+    "city": "London",
+    "postcode": "NW3 6DN",
+    "country": "United Kingdom",
+    "full": "Unit 3, Palace Court, 250 Finchley Road, London NW3 6DN"
+  },
+  "contact": {
+    "phone": "07459 345456",
+    "email": "contact@hampsteadrenovations.co.uk",
+    "website": "https://www.hampsteadrenovations.co.uk"
+  },
+  "branding": {
+    "tagline": "Your Trusted Partner for North West London Property Information",
+    "description": "Hampstead Renovations provides comprehensive property data, planning applications, and local area insights for North West London. Specializing in property renovation, development, and market intelligence.",
+    "keywords": [
+      "Hampstead Renovations",
+      "North West London property",
+      "property renovation",
+      "planning applications",
+      "property data",
+      "NW London property search",
+      "property development London",
+      "Hampstead property services"
+    ]
+  },
+  "services": [
+    "Property Data & Market Intelligence",
+    "Planning Application Insights",
+    "Property Renovation Services",
+    "Development Opportunities",
+    "Local Area Analysis",
+    "Property Valuation Data"
+  ],
+  "socialMedia": {
+    "twitter": "@HampsteadReno",
+    "facebook": "HampsteadRenovations",
+    "linkedin": "company/hampstead-renovations",
+    "instagram": "@hampsteadrenovations"
+  },
+  "operatingHours": {
+    "monday": "9:00 AM - 6:00 PM",
+    "tuesday": "9:00 AM - 6:00 PM",
+    "wednesday": "9:00 AM - 6:00 PM",
+    "thursday": "9:00 AM - 6:00 PM",
+    "friday": "9:00 AM - 6:00 PM",
+    "saturday": "10:00 AM - 4:00 PM",
+    "sunday": "Closed"
+  },
+  "serviceAreas": [
+    "Hampstead",
+    "Belsize Park",
+    "Swiss Cottage",
+    "West Hampstead",
+    "Primrose Hill",
+    "St John's Wood",
+    "Camden",
+    "Finchley",
+    "Golders Green",
+    "Kilburn"
+  ],
+  "legal": {
+    "companyNumber": "TBD",
+    "vatNumber": "TBD",
+    "dataProtectionOfficer": "contact@hampsteadrenovations.co.uk",
+    "icoRegistrationNumber": "TBD"
+  }
+}
