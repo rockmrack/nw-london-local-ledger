@@ -1,5 +1,5 @@
 /**
- * Camden Council Planning Portal Scraper
+ * Barnet Council Planning Portal Scraper
  */
 
 import * as cheerio from 'cheerio';
@@ -7,12 +7,12 @@ import { BaseScraper, ScraperConfig } from '../base/BaseScraper';
 import type { PlanningApplication } from '@/types/planning';
 import { slugifyPlanningReference } from '@/lib/utils/slugify';
 
-export class CamdenScraper extends BaseScraper {
+export class BarnetScraper extends BaseScraper {
   constructor() {
     const config: ScraperConfig = {
-      council: 'Camden',
-      baseUrl: 'https://camdocs.camden.gov.uk/HPRMWebDrawer/PlanRec',
-      rateLimit: 1, // 1 request per second
+      council: 'Barnet',
+      baseUrl: 'https://publicaccess.barnet.gov.uk/online-applications',
+      rateLimit: 1,
       maxRetries: 3,
       timeout: 30000,
       userAgent: process.env.SCRAPER_USER_AGENT || 'NWLondonLedger-Bot/1.0',
@@ -21,9 +21,6 @@ export class CamdenScraper extends BaseScraper {
     super(config);
   }
 
-  /**
-   * Scrape planning applications from Camden
-   */
   async scrapePlanningApplications(fromDate: Date): Promise<PlanningApplication[]> {
     if (!this.validateConfig()) {
       throw new Error('Invalid scraper configuration');
@@ -34,19 +31,15 @@ export class CamdenScraper extends BaseScraper {
     try {
       const applications: PlanningApplication[] = [];
       let page = 1;
-      const maxPages = 50; // Limit to prevent runaway scraping
+      const maxPages = 50;
 
       while (page <= maxPages) {
         this.log(`Scraping page ${page}`);
 
-        // Build search URL for recent applications
         const searchUrl = this.buildSearchUrl(fromDate, page);
-
-        // Fetch the search results page
         const html = await this.fetchPage(searchUrl);
         if (!html) break;
 
-        // Parse applications from this page
         const pageApplications = this.parseSearchResults(html);
 
         if (pageApplications.length === 0) {
@@ -57,15 +50,12 @@ export class CamdenScraper extends BaseScraper {
         applications.push(...pageApplications);
         this.log(`Found ${pageApplications.length} applications on page ${page}`);
 
-        // Check if there are more pages
         const $ = cheerio.load(html);
-        const hasNextPage = $('.pagination .next').length > 0;
+        const hasNextPage = $('.next a, a.next').length > 0;
 
         if (!hasNextPage) break;
 
         page++;
-
-        // Rate limiting handled by BaseScraper
         await this.delay(1000);
       }
 
@@ -77,66 +67,50 @@ export class CamdenScraper extends BaseScraper {
     }
   }
 
-  /**
-   * Scrape details for a specific planning application
-   */
   async scrapePlanningDetails(reference: string): Promise<PlanningApplication | null> {
     this.log(`Scraping details for ${reference}`);
 
     try {
-      // Build detail URL
-      const detailUrl = `${this.config.baseUrl}/Details?reference=${encodeURIComponent(reference)}`;
-
-      // Fetch the detail page
+      const detailUrl = `${this.config.baseUrl}/applicationDetails.do?keyVal=${encodeURIComponent(reference)}&activeTab=summary`;
       const html = await this.fetchPage(detailUrl);
       if (!html) return null;
 
-      // Parse the detailed application data
-      const application = this.parsePlanningApplication(html);
-
-      return application;
+      return this.parsePlanningApplication(html);
     } catch (error) {
       this.handleError(error);
       return null;
     }
   }
 
-  /**
-   * Parse a planning application from HTML
-   */
   private parsePlanningApplication(html: string): PlanningApplication | null {
     try {
       const $ = cheerio.load(html);
 
-      // Extract application details from Camden's structure
-      const reference = this.extractText($, '.reference, #reference');
+      const reference = this.extractText($, '#caseNumber');
       if (!reference) return null;
 
-      const address = this.extractText($, '.address, #address, .site-address');
-      const proposal = this.extractText($, '.proposal, #proposal, .development-description');
-      const status = this.extractText($, '.status, #status, .application-status');
-      const receivedDate = this.extractDate($, '.date-received, #date-received');
-      const validatedDate = this.extractDate($, '.date-validated, #date-validated');
-      const decisionDate = this.extractDate($, '.decision-date, #decision-date');
-      const appealStatus = this.extractText($, '.appeal-status, #appeal-status');
-      const caseOfficer = this.extractText($, '.case-officer, #case-officer');
-      const ward = this.extractText($, '.ward, #ward');
+      const address = this.extractText($, '.address, #address');
+      const proposal = this.extractText($, '#proposal');
+      const status = this.extractText($, '#caseStatus');
+      const receivedDate = this.extractDate($, '#dateReceived');
+      const validatedDate = this.extractDate($, '#dateValid');
+      const decisionDate = this.extractDate($, '#dateDecision');
+      const caseOfficer = this.extractText($, '#caseOfficer');
+      const ward = this.extractText($, '#ward');
 
-      // Build the application object
       const application: Partial<PlanningApplication> = {
         reference,
         address: address || 'Unknown Address',
         proposal: proposal || '',
         status: this.normalizeStatus(status),
-        council: 'Camden',
+        council: 'Barnet',
         receivedDate,
         validatedDate,
         decisionDate,
-        appealStatus,
         caseOfficer,
         ward,
         slug: slugifyPlanningReference(reference),
-        sourceUrl: `${this.config.baseUrl}/Details?reference=${encodeURIComponent(reference)}`,
+        sourceUrl: `${this.config.baseUrl}/applicationDetails.do?keyVal=${encodeURIComponent(reference)}`,
       };
 
       return application as PlanningApplication;
@@ -146,39 +120,31 @@ export class CamdenScraper extends BaseScraper {
     }
   }
 
-  /**
-   * Parse search results page
-   */
   private parseSearchResults(html: string): PlanningApplication[] {
     const applications: PlanningApplication[] = [];
     const $ = cheerio.load(html);
 
-    // Find all application rows in the search results table
-    $('.search-results tr, .results-table tr, table.planning-applications tr').each((_, element) => {
+    $('#searchresults tr, .searchresults tr').each((_, element) => {
       try {
         const $row = $(element);
-
-        // Skip header row
         if ($row.find('th').length > 0) return;
 
-        // Extract data from table cells
-        const reference = this.extractText($, $row.find('td').eq(0));
-        if (!reference || reference.length < 5) return; // Skip invalid references
+        const $link = $row.find('a[href*="applicationDetails"]').first();
+        const reference = $link.text().trim();
+        if (!reference || reference.length < 5) return;
 
         const address = this.extractText($, $row.find('td').eq(1));
         const proposal = this.extractText($, $row.find('td').eq(2));
         const status = this.extractText($, $row.find('td').eq(3));
-        const receivedDateStr = this.extractText($, $row.find('td').eq(4));
 
         const application: Partial<PlanningApplication> = {
           reference,
           address: address || 'Unknown Address',
           proposal: proposal || '',
           status: this.normalizeStatus(status),
-          council: 'Camden',
-          receivedDate: receivedDateStr ? new Date(receivedDateStr) : undefined,
+          council: 'Barnet',
           slug: slugifyPlanningReference(reference),
-          sourceUrl: `${this.config.baseUrl}/Details?reference=${encodeURIComponent(reference)}`,
+          sourceUrl: `${this.config.baseUrl}/applicationDetails.do?keyVal=${encodeURIComponent(reference)}`,
         };
 
         applications.push(application as PlanningApplication);
@@ -190,23 +156,11 @@ export class CamdenScraper extends BaseScraper {
     return applications;
   }
 
-  /**
-   * Build search URL with date filter
-   */
   private buildSearchUrl(fromDate: Date, page: number): string {
-    const dateStr = fromDate.toISOString().split('T')[0]; // YYYY-MM-DD
-    const params = new URLSearchParams({
-      dateFrom: dateStr,
-      page: page.toString(),
-      pageSize: '50',
-    });
-
-    return `${this.config.baseUrl}/Search?${params.toString()}`;
+    const dateStr = fromDate.toISOString().split('T')[0];
+    return `${this.config.baseUrl}/search.do?action=advanced&dateFrom=${dateStr}&page=${page}`;
   }
 
-  /**
-   * Extract text from a cheerio element
-   */
   private extractText($: cheerio.CheerioAPI, selector: cheerio.Cheerio | string): string {
     if (typeof selector === 'string') {
       return $(selector).first().text().trim();
@@ -214,9 +168,6 @@ export class CamdenScraper extends BaseScraper {
     return selector.text().trim();
   }
 
-  /**
-   * Extract date from a cheerio element
-   */
   private extractDate($: cheerio.CheerioAPI, selector: string): Date | undefined {
     const text = this.extractText($, selector);
     if (!text) return undefined;
@@ -225,15 +176,12 @@ export class CamdenScraper extends BaseScraper {
     return isNaN(date.getTime()) ? undefined : date;
   }
 
-  /**
-   * Normalize status values
-   */
   private normalizeStatus(status: string): string {
     const normalized = status.toLowerCase().trim();
 
     if (normalized.includes('pending') || normalized.includes('submitted')) {
       return 'pending';
-    } else if (normalized.includes('approve') || normalized.includes('granted')) {
+    } else if (normalized.includes('approve') || normalized.includes('granted') || normalized.includes('permitted')) {
       return 'approved';
     } else if (normalized.includes('refuse') || normalized.includes('reject')) {
       return 'refused';
@@ -246,9 +194,6 @@ export class CamdenScraper extends BaseScraper {
     return status;
   }
 
-  /**
-   * Delay helper for rate limiting
-   */
   private delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
