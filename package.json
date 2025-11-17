@@ -1,8 +1,17 @@
 {
   "name": "nw-london-local-ledger",
   "version": "0.1.0",
-  "description": "A comprehensive, data-driven community hub for North West London property and planning information",
+  "description": "Hampstead Renovations - Your Trusted Partner for North West London Property Information. Comprehensive property data, planning applications, and local area insights.",
   "private": true,
+  "author": {
+    "name": "Hampstead Renovations Ltd",
+    "email": "contact@hampsteadrenovations.co.uk",
+    "url": "https://www.hampsteadrenovations.co.uk"
+  },
+  "homepage": "https://www.hampsteadrenovations.co.uk",
+  "bugs": {
+    "email": "contact@hampsteadrenovations.co.uk"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",

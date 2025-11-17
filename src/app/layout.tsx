@@ -8,6 +8,7 @@ import { ProgressiveHydration } from '@/components/ProgressiveHydration';
 import { PreloadResources } from '@/components/PreloadResources';
 import { LoadingHeader } from '@/components/layout/LoadingHeader';
 import { LoadingFooter } from '@/components/layout/LoadingFooter';
+import { COMPANY, COMPANY_META, getOrganizationSchema } from '@/lib/constants/company';
 import '@/styles/globals.css';
 
 // Optimize font loading with variable fonts
@@ -31,28 +32,16 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://nwlondonledger.com'),
+  metadataBase: new URL(COMPANY.contact.website),
   title: {
-    default: 'NW London Local Ledger | Property, Planning & Local News',
-    template: '%s | NW London Local Ledger',
+    default: `${COMPANY.name} | ${COMPANY.branding.tagline}`,
+    template: COMPANY_META.titleTemplate,
   },
-  description:
-    'The most comprehensive data-driven community hub for North West London property information, planning applications, and local news.',
-  keywords: [
-    'NW London property',
-    'planning applications',
-    'property prices',
-    'local news',
-    'Hampstead',
-    'Camden',
-    'Kilburn',
-    'property search',
-    'real estate',
-    'London housing',
-  ],
-  authors: [{ name: 'NW London Local Ledger' }],
-  creator: 'NW London Local Ledger',
-  publisher: 'NW London Local Ledger',
+  description: COMPANY_META.description,
+  keywords: COMPANY_META.keywords,
+  authors: [{ name: COMPANY.name, url: COMPANY.contact.website }],
+  creator: COMPANY.name,
+  publisher: COMPANY.legalName,
   formatDetection: {
     email: false,
     address: false,
@@ -74,29 +63,27 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_GB',
-    url: 'https://nwlondonledger.com',
-    siteName: 'NW London Local Ledger',
-    title: 'NW London Local Ledger | Property, Planning & Local News',
-    description:
-      'Everything you need to know about living and owning property in North West London',
+    url: COMPANY.contact.website,
+    siteName: COMPANY.name,
+    title: `${COMPANY.name} | ${COMPANY.branding.tagline}`,
+    description: COMPANY.branding.description,
     images: [
       {
         url: '/images/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'NW London Local Ledger',
+        alt: COMPANY.name,
         type: 'image/jpeg',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'NW London Local Ledger | Property, Planning & Local News',
-    description:
-      'Everything you need to know about living and owning property in North West London',
+    title: `${COMPANY.name} | ${COMPANY.branding.tagline}`,
+    description: COMPANY.branding.description,
     images: ['/images/twitter-image.jpg'],
-    creator: '@nwlondonledger',
-    site: '@nwlondonledger',
+    creator: COMPANY.social.twitter,
+    site: COMPANY.social.twitter,
   },
   icons: {
     icon: [
@@ -126,13 +113,12 @@ export const metadata: Metadata = {
     bing: 'bing-verification-code',
   },
   alternates: {
-    canonical: 'https://nwlondonledger.com',
+    canonical: COMPANY.contact.website,
     languages: {
-      'en-GB': 'https://nwlondonledger.com',
-      'en-US': 'https://us.nwlondonledger.com',
+      'en-GB': COMPANY.contact.website,
     },
     types: {
-      'application/rss+xml': 'https://nwlondonledger.com/feed.xml',
+      'application/rss+xml': `${COMPANY.contact.website}/feed.xml`,
     },
   },
   category: 'Real Estate',
@@ -237,7 +223,15 @@ export default function RootLayout({
         {/* Apple mobile web app settings */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="NW London Ledger" />
+        <meta name="apple-mobile-web-app-title" content={COMPANY.name} />
+
+        {/* Company Schema.org structured data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(getOrganizationSchema()),
+          }}
+        />
 
         {/* Microsoft tile settings */}
         <meta name="msapplication-TileColor" content="#4f46e5" />
