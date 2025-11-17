@@ -123,6 +123,75 @@ export async function incrementCache(key: string): Promise<number> {
 }
 
 /**
+ * Batch get multiple keys using pipeline (5-10x faster than individual gets)
+ */
+export async function batchGetCache<T>(keys: string[]): Promise<Map<string, T | null>> {
+  try {
+    if (keys.length === 0) return new Map();
+
+    const pipeline = redisClient.multi();
+    keys.forEach(key => pipeline.get(key));
+
+    const results = await pipeline.exec();
+    const resultMap = new Map<string, T | null>();
+
+    results.forEach((result, index) => {
+      const value = result as string | null;
+      resultMap.set(keys[index], value ? JSON.parse(value) : null);
+    });
+
+    return resultMap;
+  } catch (error) {
+    console.error('Error batch getting cache:', error);
+    return new Map(keys.map(k => [k, null]));
+  }
+}
+
+/**
+ * Batch set multiple key-value pairs using pipeline (5-10x faster than individual sets)
+ */
+export async function batchSetCache<T>(
+  entries: Array<{ key: string; value: T; ttlSeconds?: number }>
+): Promise<void> {
+  try {
+    if (entries.length === 0) return;
+
+    const pipeline = redisClient.multi();
+
+    entries.forEach(({ key, value, ttlSeconds }) => {
+      const serialized = JSON.stringify(value);
+      if (ttlSeconds) {
+        pipeline.setEx(key, ttlSeconds, serialized);
+      } else {
+        pipeline.set(key, serialized);
+      }
+    });
+
+    await pipeline.exec();
+  } catch (error) {
+    console.error('Error batch setting cache:', error);
+  }
+}
+
+/**
+ * Batch delete multiple keys using pipeline
+ */
+export async function batchDeleteCache(keys: string[]): Promise<void> {
+  try {
+    if (keys.length === 0) return;
+
+    // Process in chunks of 1000 to avoid overwhelming Redis
+    const chunkSize = 1000;
+    for (let i = 0; i < keys.length; i += chunkSize) {
+      const chunk = keys.slice(i, i + chunkSize);
+      await redisClient.del(chunk);
+    }
+  } catch (error) {
+    console.error('Error batch deleting cache:', error);
+  }
+}
+
+/**
  * Close Redis connection
  */
 export async function closeRedis(): Promise<void> {

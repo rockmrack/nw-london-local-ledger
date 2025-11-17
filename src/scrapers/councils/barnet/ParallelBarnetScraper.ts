@@ -1,72 +1,113 @@
 /**
- * Barnet Council Planning Portal Scraper
+ * Parallel version of Barnet Council Planning Portal Scraper
+ * Implements parallel page processing for improved performance
  */
 
 import * as cheerio from 'cheerio';
-import { BaseScraper, ScraperConfig } from '../base/BaseScraper';
+import { ParallelBaseScraper, ParallelScraperConfig } from '../base/ParallelBaseScraper';
 import type { PlanningApplication } from '@/types/planning';
 import { slugifyPlanningReference } from '@/lib/utils/slugify';
 
-export class BarnetScraper extends BaseScraper {
+export class ParallelBarnetScraper extends ParallelBaseScraper {
   constructor() {
-    const config: ScraperConfig = {
+    const config: ParallelScraperConfig = {
       council: 'Barnet',
       baseUrl: 'https://publicaccess.barnet.gov.uk/online-applications',
-      rateLimit: 1,
+      rateLimit: 5, // Increased from 1 to 5 requests per second
       maxRetries: 3,
       timeout: 30000,
       userAgent: process.env.SCRAPER_USER_AGENT || 'NWLondonLedger-Bot/1.0',
+      parallelPages: 10, // Process 10 pages in parallel
+      parallelDetails: 5, // Process 5 detail pages in parallel
+      useBurstRateLimit: true,
+      burstCapacity: 20 // Allow burst up to 20 requests
     };
 
     super(config);
   }
 
+  /**
+   * Main entry point - uses parallel processing
+   */
   async scrapePlanningApplications(fromDate: Date): Promise<PlanningApplication[]> {
-    if (!this.validateConfig()) {
-      throw new Error('Invalid scraper configuration');
-    }
+    return this.scrapePlanningApplicationsParallel(fromDate);
+  }
 
-    this.log(`Starting scrape from ${fromDate.toISOString()}`);
-
+  /**
+   * Get the total number of pages to scrape
+   */
+  protected async getTotalPages(fromDate: Date): Promise<number> {
     try {
-      const applications: PlanningApplication[] = [];
-      let page = 1;
-      const maxPages = 50;
+      const firstPageUrl = this.buildSearchUrl(fromDate, 1);
+      const html = await this.fetchPage(firstPageUrl);
 
-      while (page <= maxPages) {
-        this.log(`Scraping page ${page}`);
+      if (!html) return 0;
 
-        const searchUrl = this.buildSearchUrl(fromDate, page);
-        const html = await this.fetchPage(searchUrl);
-        if (!html) break;
+      const $ = cheerio.load(html);
 
-        const pageApplications = this.parseSearchResults(html);
+      // Try to find pagination info
+      const paginationText = $('.paging, .pagination').text();
+      const pageMatch = paginationText.match(/Page \d+ of (\d+)/i);
 
-        if (pageApplications.length === 0) {
-          this.log(`No more results found on page ${page}`);
-          break;
-        }
-
-        applications.push(...pageApplications);
-        this.log(`Found ${pageApplications.length} applications on page ${page}`);
-
-        const $ = cheerio.load(html);
-        const hasNextPage = $('.next a, a.next').length > 0;
-
-        if (!hasNextPage) break;
-
-        page++;
-        await this.delay(1000);
+      if (pageMatch) {
+        return parseInt(pageMatch[1], 10);
       }
 
-      this.log(`Scraped ${applications.length} applications total`);
-      return applications;
+      // Fallback: Check if there are results and estimate
+      const resultsCount = $('#searchresults tr, .searchresults tr').length;
+      if (resultsCount > 0) {
+        // If we can't determine exact pages, use a reasonable maximum
+        return Math.min(50, Math.ceil(resultsCount / 10));
+      }
+
+      return 0;
     } catch (error) {
-      this.handleError(error);
-      throw error;
+      this.log(`Failed to determine total pages: ${error}`, 'error');
+      return 10; // Fallback to a reasonable default
     }
   }
 
+  /**
+   * Scrape a single page
+   */
+  protected async scrapePage(fromDate: Date, pageNumber: number): Promise<PlanningApplication[]> {
+    try {
+      const url = this.buildSearchUrl(fromDate, pageNumber);
+      const html = await this.fetchPage(url);
+
+      if (!html) {
+        return [];
+      }
+
+      const applications = this.parseSearchResults(html);
+
+      if (applications.length > 0) {
+        this.log(`Page ${pageNumber}: Found ${applications.length} applications`);
+      }
+
+      return applications;
+    } catch (error) {
+      this.log(`Failed to scrape page ${pageNumber}: ${error}`, 'error');
+      throw error; // Let the retry mechanism handle it
+    }
+  }
+
+  /**
+   * Fetch a page with error handling
+   */
+  private async fetchPage(url: string): Promise<string | null> {
+    try {
+      const response = await this.fetch(url);
+      return await response.text();
+    } catch (error) {
+      this.log(`Failed to fetch ${url}: ${error}`, 'error');
+      return null;
+    }
+  }
+
+  /**
+   * Scrape details for a specific planning application
+   */
   async scrapePlanningDetails(reference: string): Promise<PlanningApplication | null> {
     this.log(`Scraping details for ${reference}`);
 
@@ -192,19 +233,5 @@ export class BarnetScraper extends BaseScraper {
     }
 
     return status;
-  }
-
-  private delay(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
-
-  private async fetchPage(url: string): Promise<string | null> {
-    try {
-      const response = await this.fetch(url);
-      return await response.text();
-    } catch (error) {
-      this.log(`Failed to fetch ${url}: ${error}`, 'error');
-      return null;
-    }
   }
 }

@@ -1,68 +1,70 @@
 /**
- * Barnet Council Planning Portal Scraper
+ * Parallel version of Brent Council Planning Portal Scraper
  */
 
 import * as cheerio from 'cheerio';
-import { BaseScraper, ScraperConfig } from '../base/BaseScraper';
+import { ParallelBaseScraper, ParallelScraperConfig } from '../base/ParallelBaseScraper';
 import type { PlanningApplication } from '@/types/planning';
 import { slugifyPlanningReference } from '@/lib/utils/slugify';
 
-export class BarnetScraper extends BaseScraper {
+export class ParallelBrentScraper extends ParallelBaseScraper {
   constructor() {
-    const config: ScraperConfig = {
-      council: 'Barnet',
-      baseUrl: 'https://publicaccess.barnet.gov.uk/online-applications',
-      rateLimit: 1,
+    const config: ParallelScraperConfig = {
+      council: 'Brent',
+      baseUrl: 'https://pa.brent.gov.uk/online-applications',
+      rateLimit: 5,
       maxRetries: 3,
       timeout: 30000,
       userAgent: process.env.SCRAPER_USER_AGENT || 'NWLondonLedger-Bot/1.0',
+      parallelPages: 10,
+      parallelDetails: 5,
+      useBurstRateLimit: true,
+      burstCapacity: 20
     };
 
     super(config);
   }
 
   async scrapePlanningApplications(fromDate: Date): Promise<PlanningApplication[]> {
-    if (!this.validateConfig()) {
-      throw new Error('Invalid scraper configuration');
-    }
+    return this.scrapePlanningApplicationsParallel(fromDate);
+  }
 
-    this.log(`Starting scrape from ${fromDate.toISOString()}`);
-
+  protected async getTotalPages(fromDate: Date): Promise<number> {
     try {
-      const applications: PlanningApplication[] = [];
-      let page = 1;
-      const maxPages = 50;
+      const firstPageUrl = this.buildSearchUrl(fromDate, 1);
+      const response = await this.fetch(firstPageUrl);
+      const html = await response.text();
+      const $ = cheerio.load(html);
 
-      while (page <= maxPages) {
-        this.log(`Scraping page ${page}`);
+      const paginationText = $('.pagination, .paging').text();
+      const pageMatch = paginationText.match(/Page \d+ of (\d+)/i);
 
-        const searchUrl = this.buildSearchUrl(fromDate, page);
-        const html = await this.fetchPage(searchUrl);
-        if (!html) break;
-
-        const pageApplications = this.parseSearchResults(html);
-
-        if (pageApplications.length === 0) {
-          this.log(`No more results found on page ${page}`);
-          break;
-        }
-
-        applications.push(...pageApplications);
-        this.log(`Found ${pageApplications.length} applications on page ${page}`);
-
-        const $ = cheerio.load(html);
-        const hasNextPage = $('.next a, a.next').length > 0;
-
-        if (!hasNextPage) break;
-
-        page++;
-        await this.delay(1000);
+      if (pageMatch) {
+        return parseInt(pageMatch[1], 10);
       }
 
-      this.log(`Scraped ${applications.length} applications total`);
+      const resultsCount = $('.searchresult, #searchresults tr').length;
+      return resultsCount > 0 ? Math.min(50, Math.ceil(resultsCount / 10)) : 0;
+    } catch (error) {
+      this.log(`Failed to determine total pages: ${error}`, 'error');
+      return 10;
+    }
+  }
+
+  protected async scrapePage(fromDate: Date, pageNumber: number): Promise<PlanningApplication[]> {
+    try {
+      const url = this.buildSearchUrl(fromDate, pageNumber);
+      const response = await this.fetch(url);
+      const html = await response.text();
+
+      const applications = this.parseSearchResults(html);
+      if (applications.length > 0) {
+        this.log(`Page ${pageNumber}: Found ${applications.length} applications`);
+      }
+
       return applications;
     } catch (error) {
-      this.handleError(error);
+      this.log(`Failed to scrape page ${pageNumber}: ${error}`, 'error');
       throw error;
     }
   }
@@ -71,10 +73,9 @@ export class BarnetScraper extends BaseScraper {
     this.log(`Scraping details for ${reference}`);
 
     try {
-      const detailUrl = `${this.config.baseUrl}/applicationDetails.do?keyVal=${encodeURIComponent(reference)}&activeTab=summary`;
-      const html = await this.fetchPage(detailUrl);
-      if (!html) return null;
-
+      const detailUrl = `${this.config.baseUrl}/applicationDetails.do?keyVal=${encodeURIComponent(reference)}`;
+      const response = await this.fetch(detailUrl);
+      const html = await response.text();
       return this.parsePlanningApplication(html);
     } catch (error) {
       this.handleError(error);
@@ -86,16 +87,16 @@ export class BarnetScraper extends BaseScraper {
     try {
       const $ = cheerio.load(html);
 
-      const reference = this.extractText($, '#caseNumber');
+      const reference = this.extractText($, '#reference, .reference');
       if (!reference) return null;
 
-      const address = this.extractText($, '.address, #address');
-      const proposal = this.extractText($, '#proposal');
-      const status = this.extractText($, '#caseStatus');
-      const receivedDate = this.extractDate($, '#dateReceived');
-      const validatedDate = this.extractDate($, '#dateValid');
-      const decisionDate = this.extractDate($, '#dateDecision');
-      const caseOfficer = this.extractText($, '#caseOfficer');
+      const address = this.extractText($, '.address, #siteAddress');
+      const proposal = this.extractText($, '#proposal, .proposal');
+      const status = this.extractText($, '#status, .status');
+      const receivedDate = this.extractDate($, '#receivedDate');
+      const validatedDate = this.extractDate($, '#validDate');
+      const decisionDate = this.extractDate($, '#decisionDate');
+      const caseOfficer = this.extractText($, '#officer');
       const ward = this.extractText($, '#ward');
 
       const application: Partial<PlanningApplication> = {
@@ -103,7 +104,7 @@ export class BarnetScraper extends BaseScraper {
         address: address || 'Unknown Address',
         proposal: proposal || '',
         status: this.normalizeStatus(status),
-        council: 'Barnet',
+        council: 'Brent',
         receivedDate,
         validatedDate,
         decisionDate,
@@ -124,32 +125,32 @@ export class BarnetScraper extends BaseScraper {
     const applications: PlanningApplication[] = [];
     const $ = cheerio.load(html);
 
-    $('#searchresults tr, .searchresults tr').each((_, element) => {
+    $('.searchresult, #searchresults tr').each((_, element) => {
       try {
-        const $row = $(element);
-        if ($row.find('th').length > 0) return;
+        const $elem = $(element);
+        if ($elem.find('th').length > 0) return;
 
-        const $link = $row.find('a[href*="applicationDetails"]').first();
+        const $link = $elem.find('a[href*="applicationDetails"]').first();
         const reference = $link.text().trim();
         if (!reference || reference.length < 5) return;
 
-        const address = this.extractText($, $row.find('td').eq(1));
-        const proposal = this.extractText($, $row.find('td').eq(2));
-        const status = this.extractText($, $row.find('td').eq(3));
+        const address = this.extractText($, $elem.find('.address, td').eq(1));
+        const proposal = this.extractText($, $elem.find('.description, td').eq(2));
+        const status = this.extractText($, $elem.find('.status, td').eq(3));
 
         const application: Partial<PlanningApplication> = {
           reference,
           address: address || 'Unknown Address',
           proposal: proposal || '',
           status: this.normalizeStatus(status),
-          council: 'Barnet',
+          council: 'Brent',
           slug: slugifyPlanningReference(reference),
           sourceUrl: `${this.config.baseUrl}/applicationDetails.do?keyVal=${encodeURIComponent(reference)}`,
         };
 
         applications.push(application as PlanningApplication);
       } catch (error) {
-        this.log(`Failed to parse search result row`, 'error');
+        this.log(`Failed to parse search result`, 'error');
       }
     });
 
@@ -181,7 +182,7 @@ export class BarnetScraper extends BaseScraper {
 
     if (normalized.includes('pending') || normalized.includes('submitted')) {
       return 'pending';
-    } else if (normalized.includes('approve') || normalized.includes('granted') || normalized.includes('permitted')) {
+    } else if (normalized.includes('approve') || normalized.includes('granted')) {
       return 'approved';
     } else if (normalized.includes('refuse') || normalized.includes('reject')) {
       return 'refused';
@@ -192,19 +193,5 @@ export class BarnetScraper extends BaseScraper {
     }
 
     return status;
-  }
-
-  private delay(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
-
-  private async fetchPage(url: string): Promise<string | null> {
-    try {
-      const response = await this.fetch(url);
-      return await response.text();
-    } catch (error) {
-      this.log(`Failed to fetch ${url}: ${error}`, 'error');
-      return null;
-    }
   }
 }
