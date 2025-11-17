@@ -32,7 +32,20 @@
     "worker:start": "tsx src/workers/queue-worker.ts",
     "worker:dev": "tsx watch src/workers/queue-worker.ts",
     "queue:stats": "curl http://localhost:3000/api/admin/queues/stats",
-    "queue:health": "curl http://localhost:3000/api/admin/queues/health"
+    "queue:health": "curl http://localhost:3000/api/admin/queues/health",
+    "wasm:build": "cd rust-wasm && ./build.sh",
+    "wasm:build:property": "cd rust-wasm/property-processor && wasm-pack build --target web --out-dir ../../src/lib/wasm/pkg/property-processor --release",
+    "wasm:build:geo": "cd rust-wasm/geo-calculator && wasm-pack build --target web --out-dir ../../src/lib/wasm/pkg/geo-calculator --release",
+    "wasm:build:stats": "cd rust-wasm/stats-engine && wasm-pack build --target web --out-dir ../../src/lib/wasm/pkg/stats-engine --release",
+    "wasm:build:search": "cd rust-wasm/search-optimizer && wasm-pack build --target web --out-dir ../../src/lib/wasm/pkg/search-optimizer --release",
+    "wasm:build:transform": "cd rust-wasm/data-transformer && wasm-pack build --target web --out-dir ../../src/lib/wasm/pkg/data-transformer --release",
+    "wasm:test": "cd rust-wasm && cargo test",
+    "wasm:benchmark": "curl http://localhost:3000/api/wasm-benchmark?size=10000&iterations=100",
+    "wasm:clean": "rm -rf src/lib/wasm/pkg && cd rust-wasm && cargo clean",
+    "analyze": "ANALYZE=true npm run build",
+    "lighthouse": "lhci autorun",
+    "perf:check": "node scripts/check-performance-budgets.js",
+    "workers:deploy": "wrangler publish workers/multi-region.ts"
   },
   "dependencies": {
     "next": "^14.0.0",
@@ -68,7 +81,17 @@
     "@as-integrations/next": "^3.0.0",
     "graphql-depth-limit": "^1.1.0",
     "graphql-query-complexity": "^0.12.0",
-    "graphql-rate-limit": "^3.3.0"
+    "graphql-rate-limit": "^3.3.0",
+    "@tensorflow/tfjs": "^4.15.0",
+    "@tensorflow/tfjs-node": "^4.15.0",
+    "@tensorflow/tfjs-backend-wasm": "^4.15.0",
+    "@supabase/supabase-js": "^2.39.0",
+    "ioredis": "^5.3.2",
+    "lru-cache": "^10.1.0",
+    "@neshca/cache-handler": "^1.0.0",
+    "workbox-webpack-plugin": "^7.0.0",
+    "workbox-window": "^7.0.0",
+    "worker-loader": "^3.0.8"
   },
   "devDependencies": {
     "@testing-library/react": "^14.1.0",
@@ -86,7 +109,13 @@
     "husky": "^8.0.0",
     "lint-staged": "^15.1.0",
     "tsx": "^4.6.0",
-    "dotenv": "^16.3.0"
+    "dotenv": "^16.3.0",
+    "@lhci/cli": "^0.13.0",
+    "@next/bundle-analyzer": "^14.0.0",
+    "webpagetest": "^0.5.0",
+    "size-limit": "^11.0.0",
+    "@size-limit/preset-app": "^11.0.0",
+    "wrangler": "^3.22.0"
   },
   "engines": {
     "node": ">=18.0.0",

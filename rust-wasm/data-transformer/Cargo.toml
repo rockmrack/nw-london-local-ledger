@@ -1,0 +1,25 @@
+[package]
+name = "data-transformer"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+wasm-bindgen = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde-wasm-bindgen = { workspace = true }
+wee_alloc = { workspace = true }
+console_error_panic_hook = { workspace = true }
+js-sys = { workspace = true }
+web-sys = { workspace = true, features = ["console"] }
+simd-json = { workspace = true }
+flate2 = { workspace = true }
+lz4_flex = { workspace = true }
+ahash = { workspace = true }
+base64 = "0.22"
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3.42"

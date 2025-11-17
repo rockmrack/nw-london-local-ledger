@@ -1,0 +1,312 @@
+name: Performance Monitoring & Optimization
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 */6 * * *' # Run every 6 hours
+
+env:
+  NODE_VERSION: '20.x'
+  NEXT_PUBLIC_BASE_URL: ${{ secrets.NEXT_PUBLIC_BASE_URL }}
+
+jobs:
+  lighthouse:
+    name: Lighthouse CI
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        url:
+          - '/'
+          - '/properties'
+          - '/search'
+          - '/property/sample'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npm install -g @lhci/cli@latest
+
+      - name: Build application
+        run: npm run build
+        env:
+          NODE_ENV: production
+
+      - name: Run Lighthouse CI
+        run: |
+          lhci autorun \
+            --collect.url=${{ secrets.DEPLOY_URL }}${{ matrix.url }} \
+            --collect.numberOfRuns=3 \
+            --assert.preset=lighthouse:recommended \
+            --assert.assertions.categories:performance=95 \
+            --assert.assertions.categories:accessibility=100 \
+            --assert.assertions.categories:best-practices=100 \
+            --assert.assertions.categories:seo=100 \
+            --assert.assertions.first-contentful-paint=off \
+            --assert.assertions.largest-contentful-paint=off \
+            --assert.assertions.interactive=off \
+            --assert.assertions.cumulative-layout-shift=off \
+            --upload.target=temporary-public-storage
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+
+      - name: Save Lighthouse results
+        uses: actions/upload-artifact@v3
+        with:
+          name: lighthouse-results-${{ matrix.url }}
+          path: .lighthouseci
+
+  bundle-analysis:
+    name: Bundle Size Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build and analyze bundle
+        run: |
+          npm run build
+          npm run analyze
+
+      - name: Check bundle size
+        uses: andresz1/size-limit-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          skip_step: build
+          build_script: build
+
+      - name: Upload bundle stats
+        uses: actions/upload-artifact@v3
+        with:
+          name: bundle-stats
+          path: .next/analyze
+
+  performance-budget:
+    name: Performance Budget Check
+    runs-on: ubuntu-latest
+    needs: [lighthouse, bundle-analysis]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Lighthouse results
+        uses: actions/download-artifact@v3
+        with:
+          path: lighthouse-results
+
+      - name: Download bundle stats
+        uses: actions/download-artifact@v3
+        with:
+          name: bundle-stats
+          path: bundle-stats
+
+      - name: Check performance budgets
+        run: |
+          node scripts/check-performance-budgets.js
+        env:
+          BUDGET_CONFIG: ./config/performance-budgets.json
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const results = JSON.parse(fs.readFileSync('performance-results.json', 'utf8'));
+
+            const comment = `## 🚀 Performance Report
+
+            ### Lighthouse Scores
+            | Metric | Score | Target | Status |
+            |--------|-------|--------|--------|
+            | Performance | ${results.lighthouse.performance}% | 95% | ${results.lighthouse.performance >= 95 ? '✅' : '⚠️'} |
+            | Accessibility | ${results.lighthouse.accessibility}% | 100% | ${results.lighthouse.accessibility >= 100 ? '✅' : '❌'} |
+            | Best Practices | ${results.lighthouse.bestPractices}% | 100% | ${results.lighthouse.bestPractices >= 100 ? '✅' : '❌'} |
+            | SEO | ${results.lighthouse.seo}% | 100% | ${results.lighthouse.seo >= 100 ? '✅' : '❌'} |
+
+            ### Core Web Vitals
+            | Metric | Value | Target | Status |
+            |--------|-------|--------|--------|
+            | FCP | ${results.vitals.fcp}ms | <1200ms | ${results.vitals.fcp <= 1200 ? '✅' : '⚠️'} |
+            | LCP | ${results.vitals.lcp}ms | <2000ms | ${results.vitals.lcp <= 2000 ? '✅' : '⚠️'} |
+            | CLS | ${results.vitals.cls} | <0.05 | ${results.vitals.cls <= 0.05 ? '✅' : '⚠️'} |
+            | TBT | ${results.vitals.tbt}ms | <200ms | ${results.vitals.tbt <= 200 ? '✅' : '⚠️'} |
+
+            ### Bundle Size
+            | Resource | Size | Budget | Status |
+            |----------|------|--------|--------|
+            | JavaScript | ${results.bundle.js}KB | 200KB | ${results.bundle.js <= 200 ? '✅' : '❌'} |
+            | CSS | ${results.bundle.css}KB | 50KB | ${results.bundle.css <= 50 ? '✅' : '❌'} |
+            | Images | ${results.bundle.images}KB | 500KB | ${results.bundle.images <= 500 ? '✅' : '⚠️'} |
+            | Total | ${results.bundle.total}KB | 1000KB | ${results.bundle.total <= 1000 ? '✅' : '❌'} |
+
+            ${results.passing ? '✅ All performance checks passed!' : '❌ Some performance checks failed. Please review.'}
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  deploy-workers:
+    name: Deploy Edge Workers
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    needs: performance-budget
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: 'workers'
+          command: publish multi-region.ts --env production
+
+      - name: Warm up edge caches
+        run: |
+          curl -X POST https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/purge_cache \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --data '{"files":["https://nwlondonledger.com/","https://nwlondonledger.com/api/properties"]}'
+
+  real-user-monitoring:
+    name: Real User Monitoring
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Send RUM data to monitoring service
+        run: |
+          curl -X POST ${{ secrets.RUM_ENDPOINT }} \
+            -H "Authorization: Bearer ${{ secrets.RUM_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "deployment": "${{ github.sha }}",
+              "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'",
+              "environment": "production"
+            }'
+
+      - name: Check RUM thresholds
+        run: |
+          response=$(curl -s ${{ secrets.RUM_ENDPOINT }}/metrics \
+            -H "Authorization: Bearer ${{ secrets.RUM_API_KEY }}")
+
+          p75_lcp=$(echo $response | jq '.lcp.p75')
+          p75_fid=$(echo $response | jq '.fid.p75')
+          p75_cls=$(echo $response | jq '.cls.p75')
+
+          if [ $(echo "$p75_lcp > 2500" | bc) -eq 1 ]; then
+            echo "::warning::LCP p75 ($p75_lcp ms) exceeds threshold (2500ms)"
+          fi
+
+          if [ $(echo "$p75_fid > 100" | bc) -eq 1 ]; then
+            echo "::warning::FID p75 ($p75_fid ms) exceeds threshold (100ms)"
+          fi
+
+          if [ $(echo "$p75_cls > 0.1" | bc) -eq 1 ]; then
+            echo "::warning::CLS p75 ($p75_cls) exceeds threshold (0.1)"
+          fi
+
+  synthetic-monitoring:
+    name: Synthetic Monitoring
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run WebPageTest
+        run: |
+          npm install -g webpagetest
+          webpagetest test ${{ secrets.DEPLOY_URL }} \
+            --key ${{ secrets.WPT_API_KEY }} \
+            --location London:Chrome \
+            --connectivity Cable \
+            --runs 3 \
+            --first \
+            --video \
+            --reporter json > wpt-results.json
+
+      - name: Check WebPageTest results
+        run: |
+          node scripts/check-wpt-results.js wpt-results.json
+
+      - name: Upload results to dashboard
+        run: |
+          curl -X POST ${{ secrets.MONITORING_DASHBOARD_URL }}/api/results \
+            -H "Authorization: Bearer ${{ secrets.MONITORING_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d @wpt-results.json
+
+  alert-on-regression:
+    name: Alert on Performance Regression
+    runs-on: ubuntu-latest
+    needs: [performance-budget, real-user-monitoring, synthetic-monitoring]
+    if: failure()
+
+    steps:
+      - name: Send Slack alert
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          fields: repo,message,commit,author,action,eventName,ref,workflow
+          custom_payload: |
+            {
+              "attachments": [{
+                "color": "danger",
+                "title": "Performance Regression Detected",
+                "fields": [
+                  {
+                    "title": "Repository",
+                    "value": "${{ github.repository }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Commit",
+                    "value": "${{ github.sha }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Author",
+                    "value": "${{ github.actor }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Workflow",
+                    "value": "${{ github.workflow }}",
+                    "short": true
+                  }
+                ],
+                "footer": "Performance Monitoring",
+                "footer_icon": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+              }]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

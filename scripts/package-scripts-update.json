@@ -1,0 +1,20 @@
+{
+  "scripts_to_add": {
+    "db:setup-replicas": "bash scripts/setup-replicas.sh",
+    "db:benchmark": "ts-node scripts/benchmark-database.ts",
+    "db:monitor": "ts-node scripts/monitor-replication.ts",
+    "db:health": "ts-node -e \"require('./src/lib/database/read-replica-pool').db.healthCheck().then(console.log)\"",
+    "db:stats": "ts-node -e \"console.log(require('./src/lib/database/read-replica-pool').db.getStats())\"",
+    "db:clear-cache": "ts-node -e \"require('./src/lib/database/read-replica-pool').db.clearCache()\"",
+    "pgbouncer:start": "sudo systemctl start pgbouncer",
+    "pgbouncer:stop": "sudo systemctl stop pgbouncer",
+    "pgbouncer:restart": "sudo systemctl restart pgbouncer",
+    "pgbouncer:status": "sudo systemctl status pgbouncer",
+    "pgbouncer:stats": "psql -h localhost -p 6432 -U pgbouncer pgbouncer -c 'SHOW STATS;'",
+    "pgbouncer:pools": "psql -h localhost -p 6432 -U pgbouncer pgbouncer -c 'SHOW POOLS;'",
+    "test:performance": "npm run db:benchmark",
+    "migrate:replicas": "npm run db:setup-replicas && npm run db:health"
+  },
+  "description": "Add these scripts to your package.json file to manage the read replica database system",
+  "usage": "Copy the scripts_to_add object contents into the scripts section of your package.json"
+}

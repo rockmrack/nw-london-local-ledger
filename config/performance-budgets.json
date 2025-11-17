@@ -1,0 +1,209 @@
+{
+  "budgets": [
+    {
+      "name": "Homepage Performance Budget",
+      "path": "/",
+      "metrics": {
+        "performance": 95,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100,
+        "pwa": 90
+      },
+      "timings": {
+        "firstContentfulPaint": 1200,
+        "largestContentfulPaint": 2000,
+        "firstInputDelay": 50,
+        "cumulativeLayoutShift": 0.05,
+        "timeToInteractive": 3000,
+        "totalBlockingTime": 200,
+        "speedIndex": 2500
+      },
+      "resources": {
+        "script": {
+          "budget": 200000,
+          "critical": 50000
+        },
+        "stylesheet": {
+          "budget": 50000,
+          "critical": 15000
+        },
+        "image": {
+          "budget": 500000,
+          "count": 30
+        },
+        "font": {
+          "budget": 100000,
+          "count": 4
+        },
+        "third-party": {
+          "budget": 150000,
+          "count": 5
+        },
+        "total": {
+          "budget": 1000000,
+          "requests": 50
+        }
+      }
+    },
+    {
+      "name": "Property Pages Budget",
+      "path": "/property/*",
+      "metrics": {
+        "performance": 90,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100,
+        "pwa": 85
+      },
+      "timings": {
+        "firstContentfulPaint": 1500,
+        "largestContentfulPaint": 2500,
+        "firstInputDelay": 75,
+        "cumulativeLayoutShift": 0.1,
+        "timeToInteractive": 3500,
+        "totalBlockingTime": 300,
+        "speedIndex": 3000
+      },
+      "resources": {
+        "script": {
+          "budget": 250000,
+          "critical": 60000
+        },
+        "stylesheet": {
+          "budget": 60000,
+          "critical": 20000
+        },
+        "image": {
+          "budget": 800000,
+          "count": 50
+        },
+        "font": {
+          "budget": 100000,
+          "count": 4
+        },
+        "third-party": {
+          "budget": 200000,
+          "count": 8
+        },
+        "total": {
+          "budget": 1500000,
+          "requests": 75
+        }
+      }
+    },
+    {
+      "name": "Search Pages Budget",
+      "path": "/search",
+      "metrics": {
+        "performance": 85,
+        "accessibility": 100,
+        "best-practices": 95,
+        "seo": 95,
+        "pwa": 80
+      },
+      "timings": {
+        "firstContentfulPaint": 1800,
+        "largestContentfulPaint": 3000,
+        "firstInputDelay": 100,
+        "cumulativeLayoutShift": 0.15,
+        "timeToInteractive": 4000,
+        "totalBlockingTime": 400,
+        "speedIndex": 3500
+      },
+      "resources": {
+        "script": {
+          "budget": 300000,
+          "critical": 75000
+        },
+        "stylesheet": {
+          "budget": 75000,
+          "critical": 25000
+        },
+        "image": {
+          "budget": 600000,
+          "count": 40
+        },
+        "font": {
+          "budget": 100000,
+          "count": 4
+        },
+        "third-party": {
+          "budget": 250000,
+          "count": 10
+        },
+        "total": {
+          "budget": 1800000,
+          "requests": 100
+        }
+      }
+    },
+    {
+      "name": "API Endpoints Budget",
+      "path": "/api/*",
+      "timings": {
+        "responseTime": {
+          "p50": 100,
+          "p75": 200,
+          "p90": 400,
+          "p95": 600,
+          "p99": 1000
+        }
+      },
+      "resources": {
+        "responseSize": {
+          "budget": 100000,
+          "compressed": 30000
+        }
+      }
+    }
+  ],
+  "thresholds": {
+    "warning": 0.9,
+    "error": 0.8
+  },
+  "monitoring": {
+    "enabled": true,
+    "providers": ["lighthouse", "webpagetest", "speedcurve"],
+    "frequency": "daily",
+    "alerts": {
+      "email": ["team@nwlondonledger.com"],
+      "slack": "#performance-alerts"
+    }
+  },
+  "optimization": {
+    "criticalCss": {
+      "enabled": true,
+      "inline": true,
+      "maxSize": 15000
+    },
+    "images": {
+      "formats": ["avif", "webp"],
+      "lazyLoad": true,
+      "placeholders": "blur",
+      "optimization": "aggressive"
+    },
+    "javascript": {
+      "splitting": true,
+      "minification": "aggressive",
+      "treeShaking": true,
+      "deadCodeElimination": true,
+      "modernSyntax": true
+    },
+    "fonts": {
+      "subset": true,
+      "preload": true,
+      "display": "swap",
+      "variableFonts": true
+    },
+    "compression": {
+      "brotli": true,
+      "gzip": true,
+      "minLevel": 11
+    }
+  },
+  "targets": {
+    "browsers": [">0.25%", "not dead"],
+    "node": "18.0.0"
+  }
+}
