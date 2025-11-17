@@ -9,6 +9,10 @@ import { ParallelCamdenScraper } from '../councils/camden/ParallelCamdenScraper'
 import { ParallelEalingScraper } from '../councils/ealing/ParallelEalingScraper';
 import { ParallelHarrowScraper } from '../councils/harrow/ParallelHarrowScraper';
 import { ParallelWestminsterScraper } from '../councils/westminster/ParallelWestminsterScraper';
+import { ParallelHammersmithScraper } from '../councils/hammersmith/ParallelHammersmithScraper';
+import { ParallelKensingtonScraper } from '../councils/kensington/ParallelKensingtonScraper';
+import { ParallelHillingdonScraper } from '../councils/hillingdon/ParallelHillingdonScraper';
+import { ParallelHounslowScraper } from '../councils/hounslow/ParallelHounslowScraper';
 import type { PlanningApplication } from '@/types/planning';
 
 interface ScraperResult {
@@ -38,7 +42,11 @@ export class ScraperOrchestrator {
     { name: 'Camden', scraper: new ParallelCamdenScraper() },
     { name: 'Ealing', scraper: new ParallelEalingScraper() },
     { name: 'Harrow', scraper: new ParallelHarrowScraper() },
-    { name: 'Westminster', scraper: new ParallelWestminsterScraper() }
+    { name: 'Westminster', scraper: new ParallelWestminsterScraper() },
+    { name: 'Hammersmith & Fulham', scraper: new ParallelHammersmithScraper() },
+    { name: 'Kensington & Chelsea', scraper: new ParallelKensingtonScraper() },
+    { name: 'Hillingdon', scraper: new ParallelHillingdonScraper() },
+    { name: 'Hounslow', scraper: new ParallelHounslowScraper() }
   ];
 
   private abortController?: AbortController;

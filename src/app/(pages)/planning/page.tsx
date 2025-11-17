@@ -5,7 +5,11 @@
 
 import type { Metadata } from 'next';
 import { PlanningCard } from '@/components/planning/PlanningCard';
+import { ISRConfig } from '@/lib/isr/config';
 import type { PlanningApplication, PlanningSearchResult } from '@/types/planning';
+
+// Configure ISR for planning list page
+export const revalidate = ISRConfig.revalidation.planning; // 1 hour
 
 export const metadata: Metadata = {
   title: 'Planning Applications in NW London | Live Planning Data',
@@ -26,7 +30,12 @@ async function getPlanningApplications(searchParams: any): Promise<PlanningSearc
   const url = `${baseUrl}/api/planning?${params.toString()}`;
 
   try {
-    const response = await fetch(url, { next: { revalidate: 300 } }); // 5 min cache
+    const response = await fetch(url, {
+      next: {
+        revalidate: ISRConfig.revalidation.planning,
+        tags: [ISRConfig.tags.planning, 'planning-list'],
+      },
+    });
     if (!response.ok) throw new Error('Failed to fetch planning applications');
     return await response.json();
   } catch (error) {

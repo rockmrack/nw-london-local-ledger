@@ -26,37 +26,61 @@ export type Council =
   | 'Brent'
   | 'Westminster'
   | 'Harrow'
-  | 'Ealing';
+  | 'Ealing'
+  | 'Hammersmith and Fulham'
+  | 'Kensington and Chelsea'
+  | 'Hillingdon'
+  | 'Hounslow';
 
 export interface PlanningApplication {
-  id: number;
+  id: number | string;
   reference: string;
-  council: Council;
+  council: Council | string;
   propertyId?: number;
   address: string;
   postcode?: string;
   areaId?: number;
   latitude?: number;
   longitude?: number;
-  proposal: string;
+  proposal?: string;
+  description?: string;  // Alternative to proposal
   applicationType?: string;
   developmentType?: DevelopmentType;
-  status: PlanningStatus;
-  submittedDate?: Date;
-  validatedDate?: Date;
-  decisionDate?: Date;
+  status: PlanningStatus | string;
+  submittedDate?: Date | string;
+  validatedDate?: Date | string;
+  decisionDate?: Date | string;
+  dateReceived?: string;  // Alternative date field
+  dateValidated?: string; // Alternative date field
+  dateDecided?: string;   // Alternative date field
+  targetDate?: string;    // Target decision date
   decision?: string;
+  decisionNotice?: string;
   appealStatus?: string;
   caseOfficer?: string;
-  consultationStartDate?: Date;
-  consultationEndDate?: Date;
-  slug: string;
+  applicantName?: string;
+  agentName?: string;
+  ward?: string;
+  consultationStartDate?: Date | string;
+  consultationEndDate?: Date | string;
+  councilUrl?: string;
+  documents?: Array<{
+    name?: string;
+    url: string;
+    type?: string;
+  }>;
+  publicComments?: Array<{
+    date: string;
+    comment: string;
+    name?: string;
+  }>;
+  slug?: string;
   metaTitle?: string;
   metaDescription?: string;
   sourceUrl?: string;
-  lastScrapedAt?: Date;
-  createdAt: Date;
-  updatedAt: Date;
+  lastScrapedAt?: Date | string;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 }
 
 export interface PlanningDocument {

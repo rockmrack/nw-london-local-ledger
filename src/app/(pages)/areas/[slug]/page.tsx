@@ -10,6 +10,8 @@ import { PropertyCard } from '@/components/property/PropertyCard';
 import { PlanningCard } from '@/components/planning/PlanningCard';
 import { formatPrice, formatPercentage } from '@/lib/utils/format';
 import { SchemaMarkup, generateAreaSchema } from '@/lib/seo/schema';
+import { ISRConfig } from '@/lib/isr/config';
+import { getAllAreaSlugs } from '@/lib/isr/utils';
 import type { AreaStats, Area, Property, School, Street, PlanningApplication } from '@/types/area';
 
 interface AreaDetailResponse {
@@ -21,12 +23,29 @@ interface AreaDetailResponse {
   streets: Street[];
 }
 
+// Generate static params for all areas at build time
+export async function generateStaticParams() {
+  const slugs = await getAllAreaSlugs();
+  return slugs.map((slug) => ({
+    slug,
+  }));
+}
+
+// Configure ISR revalidation
+export const revalidate = ISRConfig.revalidation.areas; // 24 hours
+export const dynamicParams = false; // Don't allow new area pages, all areas are known
+
 async function getAreaData(slug: string): Promise<AreaDetailResponse | null> {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
   const url = `${baseUrl}/api/areas/${slug}`;
 
   try {
-    const response = await fetch(url, { next: { revalidate: 3600 } }); // 1 hour cache
+    const response = await fetch(url, {
+      next: {
+        revalidate: ISRConfig.revalidation.areas,
+        tags: [ISRConfig.tags.areas, `area-${slug}`],
+      },
+    });
     if (!response.ok) return null;
     return await response.json();
   } catch (error) {

@@ -8,6 +8,8 @@ import type { Metadata } from 'next';
 import { Badge } from '@/components/ui/Badge';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { SchemaMarkup, generateArticleSchema } from '@/lib/seo/schema';
+import { ISRConfig } from '@/lib/isr/config';
+import { getNewsArticleSlugs } from '@/lib/isr/utils';
 import type { NewsArticle, ArticleTag } from '@/types/news';
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
@@ -17,10 +19,25 @@ interface ArticleDetailResponse {
   tags: ArticleTag[];
 }
 
+// Generate static params for recent news articles at build time
+export async function generateStaticParams() {
+  const slugs = await getNewsArticleSlugs(ISRConfig.buildLimits.news as number);
+  return slugs.map((slug) => ({
+    slug,
+  }));
+}
+
+// Configure ISR revalidation
+export const revalidate = ISRConfig.revalidation.news; // 3 hours
+export const dynamicParams = true; // Allow on-demand generation for new articles
+
 async function getArticle(slug: string): Promise<ArticleDetailResponse | null> {
   try {
     const response = await fetch(`${baseUrl}/api/news/${slug}`, {
-      next: { revalidate: 3600 }, // 1 hour cache
+      next: {
+        revalidate: ISRConfig.revalidation.news,
+        tags: [ISRConfig.tags.news, `news-${slug}`],
+      },
     });
 
     if (!response.ok) return null;

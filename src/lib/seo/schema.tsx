@@ -122,6 +122,44 @@ export function generateArticleSchema(article: NewsArticle, author?: string) {
 }
 
 /**
+ * Generate Planning Application schema markup
+ */
+export function generatePlanningSchema(application: PlanningApplication) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'GovernmentPermit',
+    name: `Planning Application ${application.reference}`,
+    description: application.description || application.proposal || '',
+    identifier: application.reference,
+    issuedBy: {
+      '@type': 'GovernmentOrganization',
+      name: `${application.council} Council`,
+    },
+    validFor: {
+      '@type': 'Place',
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: application.address,
+        postalCode: application.postcode,
+        addressCountry: 'GB',
+      },
+    },
+    ...(application.dateReceived && {
+      dateCreated: application.dateReceived,
+    }),
+    ...(application.dateDecided && {
+      dateModified: application.dateDecided,
+    }),
+    ...(application.status && {
+      permitAudience: {
+        '@type': 'Audience',
+        audienceType: application.status,
+      },
+    }),
+  };
+}
+
+/**
  * Generate Organization schema markup
  */
 export function generateOrganizationSchema() {

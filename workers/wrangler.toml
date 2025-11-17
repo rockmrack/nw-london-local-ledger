@@ -1,0 +1,81 @@
+# Cloudflare Workers Configuration
+# Deploy with: wrangler publish
+
+name = "nw-london-edge-cache"
+main = "edge-cache.ts"
+compatibility_date = "2024-01-01"
+workers_dev = true
+
+# Account and zone configuration
+account_id = "YOUR_ACCOUNT_ID"
+zone_id = "YOUR_ZONE_ID"
+
+# Routes to intercept
+routes = [
+  { pattern = "nw-london.example.com/*", zone_name = "nw-london.example.com" },
+  { pattern = "*.nw-london.example.com/*", zone_name = "nw-london.example.com" }
+]
+
+# KV namespaces
+kv_namespaces = [
+  { binding = "CACHE_METADATA", id = "YOUR_KV_NAMESPACE_ID", preview_id = "YOUR_KV_PREVIEW_ID" }
+]
+
+# Durable Objects (optional)
+# durable_objects.bindings = [
+#   { name = "RATE_LIMITER", class_name = "RateLimiter", script_name = "rate-limiter" }
+# ]
+
+# Environment variables
+[env.production.vars]
+ORIGIN_URL = "https://your-origin.vercel.app"
+CACHE_VERSION = "v1"
+PURGE_TOKEN = "YOUR_SECURE_PURGE_TOKEN"
+CLOUDFLARE_API_TOKEN = "YOUR_CLOUDFLARE_API_TOKEN"
+CLOUDFLARE_ZONE_ID = "YOUR_ZONE_ID"
+
+[env.staging.vars]
+ORIGIN_URL = "https://staging.your-origin.vercel.app"
+CACHE_VERSION = "v1-staging"
+PURGE_TOKEN = "YOUR_STAGING_PURGE_TOKEN"
+CLOUDFLARE_API_TOKEN = "YOUR_CLOUDFLARE_API_TOKEN"
+CLOUDFLARE_ZONE_ID = "YOUR_ZONE_ID"
+
+# Build configuration
+[build]
+command = "npm run build"
+
+[build.upload]
+format = "modules"
+main = "./edge-cache.ts"
+
+# Triggers for cache invalidation worker
+[[triggers.crons]]
+name = "cache-cleanup"
+crons = ["0 2 * * *"] # Daily at 2 AM UTC
+
+# Usage model
+usage_model = "bundled"
+
+# Limits
+[limits]
+cpu_ms = 50
+memory_mb = 128
+
+# Observability
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+# Compatibility flags
+compatibility_flags = [
+  "streams_enable_constructors",
+  "transformstream_enable_standard_constructor"
+]
+
+# Custom domains
+# custom_domain = "edge.nw-london.example.com"
+
+# Cache API settings
+[cache]
+# Cache API is enabled by default in Workers

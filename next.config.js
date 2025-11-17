@@ -127,12 +127,21 @@ const nextConfig = {
     return config;
   },
 
+  // ISR and Static Generation Configuration
+  staticPageGenerationTimeout: 120, // 2 minutes per page
+
   // Experimental features for better performance
   experimental: {
     serverActions: true,
     serverComponentsExternalPackages: ['pg', 'postgres', '@elastic/elasticsearch'],
     // Optimize package imports
     optimizePackageImports: ['@elastic/elasticsearch', 'postgres', 'redis', 'bullmq'],
+    // ISR optimizations
+    isrMemoryCacheSize: 50, // MB
+    workerThreads: false,
+    cpus: 4,
+    // Partial pre-rendering for dynamic content
+    ppr: true,
   },
 
   // Production browser source maps disabled for performance
