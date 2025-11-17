@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { PropertyCard } from '@/components/property/PropertyCard';
 import { PlanningCard } from '@/components/planning/PlanningCard';
 import { formatPrice, formatPercentage } from '@/lib/utils/format';
+import { SchemaMarkup, generateAreaSchema } from '@/lib/seo/schema';
 import type { AreaStats, Area, Property, School, Street, PlanningApplication } from '@/types/area';
 
 interface AreaDetailResponse {
@@ -67,7 +68,10 @@ export default async function AreaDetailPage({ params }: { params: { slug: strin
   const { area, stats, recentProperties, recentPlanning, schools, streets } = data;
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <>
+      <SchemaMarkup schema={generateAreaSchema(area, stats)} />
+
+      <div className="container mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-start justify-between mb-4">
@@ -294,6 +298,7 @@ export default async function AreaDetailPage({ params }: { params: { slug: strin
           </Card>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { PropertyCard } from '@/components/property/PropertyCard';
 import { PlanningCard } from '@/components/planning/PlanningCard';
 import { formatPrice, formatDate, formatArea } from '@/lib/utils/format';
+import { SchemaMarkup, generatePropertySchema } from '@/lib/seo/schema';
 import type { PropertyWithSales, Property, PlanningApplication } from '@/types/property';
 
 interface PropertyDetailResponse {
@@ -71,7 +72,10 @@ export default async function PropertyDetailPage({
   const { property, similarProperties, planningApplications, nearbyProperties } = data;
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <>
+      <SchemaMarkup schema={generatePropertySchema(property)} />
+
+      <div className="container mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-2">{property.addressLine1}</h1>
@@ -209,6 +213,7 @@ export default async function PropertyDetailPage({
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
