@@ -197,4 +197,14 @@ export class BarnetScraper extends BaseScraper {
   private delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
+
+  private async fetchPage(url: string): Promise<string | null> {
+    try {
+      const response = await this.fetch(url);
+      return await response.text();
+    } catch (error) {
+      this.log(`Failed to fetch ${url}: ${error}`, 'error');
+      return null;
+    }
+  }
 }

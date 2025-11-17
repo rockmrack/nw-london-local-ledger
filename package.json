@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:isr": "node scripts/build-isr.js",
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
@@ -17,10 +18,21 @@
     "db:reset": "node scripts/database/reset.js",
     "scraper:run": "node scripts/scrapers/run-all.js",
     "scraper:council": "node scripts/scrapers/run-council.js",
+    "scraper:parallel": "tsx src/scrapers/run-parallel-scrapers.ts",
+    "scraper:parallel:build": "tsc src/scrapers/run-parallel-scrapers.ts --outDir dist/scrapers",
+    "scraper:comprehensive": "tsx src/scrapers/run-comprehensive-scraping.ts",
+    "scraper:transport": "tsx src/scrapers/run-comprehensive-scraping.ts --skip-councils --skip-energy --skip-crime --skip-amenities",
+    "scraper:energy": "tsx src/scrapers/run-comprehensive-scraping.ts --skip-councils --skip-transport --skip-crime --skip-amenities",
+    "scraper:crime": "tsx src/scrapers/run-comprehensive-scraping.ts --skip-councils --skip-transport --skip-energy --skip-amenities",
+    "scraper:amenities": "tsx src/scrapers/run-comprehensive-scraping.ts --skip-councils --skip-transport --skip-energy --skip-crime",
     "generate:sitemap": "node scripts/seo/generate-sitemap.js",
     "generate:pages": "node scripts/seo/generate-pages.js",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
-    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,md}\""
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "worker:start": "tsx src/workers/queue-worker.ts",
+    "worker:dev": "tsx watch src/workers/queue-worker.ts",
+    "queue:stats": "curl http://localhost:3000/api/admin/queues/stats",
+    "queue:health": "curl http://localhost:3000/api/admin/queues/health"
   },
   "dependencies": {
     "next": "^14.0.0",
@@ -48,7 +60,15 @@
     "bullmq": "^4.14.0",
     "sharp": "^0.32.0",
     "clsx": "^2.0.0",
-    "class-variance-authority": "^0.7.0"
+    "class-variance-authority": "^0.7.0",
+    "@apollo/server": "^4.9.0",
+    "graphql": "^16.8.0",
+    "graphql-tag": "^2.12.6",
+    "dataloader": "^2.2.2",
+    "@as-integrations/next": "^3.0.0",
+    "graphql-depth-limit": "^1.1.0",
+    "graphql-query-complexity": "^0.12.0",
+    "graphql-rate-limit": "^3.3.0"
   },
   "devDependencies": {
     "@testing-library/react": "^14.1.0",
@@ -64,7 +84,9 @@
     "prettier": "^3.1.0",
     "prettier-plugin-tailwindcss": "^0.5.0",
     "husky": "^8.0.0",
-    "lint-staged": "^15.1.0"
+    "lint-staged": "^15.1.0",
+    "tsx": "^4.6.0",
+    "dotenv": "^16.3.0"
   },
   "engines": {
     "node": ">=18.0.0",

@@ -40,8 +40,8 @@ export async function GET(request: NextRequest) {
     // Search planning applications
     const result = await planningService.searchPlanningApplications(params);
 
-    // Cache for 5 minutes
-    await setCache(cacheKey, result, 300);
+    // Cache for 1 hour (planning data changes infrequently)
+    await setCache(cacheKey, result, 3600);
 
     return NextResponse.json(result);
   } catch (error) {

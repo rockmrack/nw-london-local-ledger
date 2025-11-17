@@ -6,9 +6,13 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { NewsCard } from '@/components/news/NewsCard';
+import { ISRConfig } from '@/lib/isr/config';
 import type { NewsArticle } from '@/types/news';
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+
+// Configure ISR for news list page
+export const revalidate = ISRConfig.revalidation.news; // 3 hours
 
 export const metadata: Metadata = {
   title: 'Local News & Market Insights | NW London Local Ledger',
@@ -33,7 +37,10 @@ interface NewsListResponse {
 async function getNews(page = 1): Promise<NewsListResponse | null> {
   try {
     const response = await fetch(`${baseUrl}/api/news?page=${page}`, {
-      next: { revalidate: 300 }, // 5 minute cache
+      next: {
+        revalidate: ISRConfig.revalidation.news,
+        tags: [ISRConfig.tags.news, 'news-list'],
+      },
     });
 
     if (!response.ok) return null;

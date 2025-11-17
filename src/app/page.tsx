@@ -1,4 +1,8 @@
 import type { Metadata } from 'next';
+import { ISRConfig } from '@/lib/isr/config';
+
+// Configure ISR for homepage
+export const revalidate = ISRConfig.revalidation.homepage; // 12 hours
 
 export const metadata: Metadata = {
   title: 'NW London Local Ledger | Property Data, Planning Applications & Local News',

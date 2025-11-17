@@ -41,8 +41,8 @@ export async function GET(request: NextRequest) {
     // Search properties
     const result = await propertyService.searchProperties(params);
 
-    // Cache for 5 minutes
-    await setCache(cacheKey, result, 300);
+    // Cache for 30 minutes (property data is relatively stable)
+    await setCache(cacheKey, result, 1800);
 
     return NextResponse.json(result);
   } catch (error) {

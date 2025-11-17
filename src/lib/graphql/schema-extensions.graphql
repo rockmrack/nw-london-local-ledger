@@ -1,0 +1,448 @@
+# GraphQL Schema Extensions for Comprehensive NW London Coverage
+
+# Transport Types
+type TransportStation {
+  id: ID!
+  stationId: String!
+  name: String!
+  slug: String!
+  stationType: String!
+  lines: [String!]!
+  zone: Int
+  latitude: Float!
+  longitude: Float!
+  postcode: String
+  area: Area
+
+  # Accessibility
+  stepFreeAccess: Boolean
+  liftAccess: Boolean
+  escalatorCount: Int
+
+  # Services
+  ticketHalls: Int
+  toilets: Boolean
+  wifi: Boolean
+  carPark: Boolean
+  bicycleParking: Boolean
+  taxiRank: Boolean
+
+  # Usage stats
+  annualEntries: Int
+  annualExits: Int
+  annualInterchanges: Int
+
+  # Real-time status
+  currentStatus: String
+  statusMessage: String
+  statusUpdatedAt: DateTime
+
+  # PTAL
+  ptalScore: Float
+
+  # Nearby properties
+  nearbyProperties(radius: Int = 500): [Property!]!
+  distanceToStation(propertyId: ID!): Float
+}
+
+type TransportConnection {
+  id: ID!
+  fromStation: TransportStation!
+  toStation: TransportStation!
+  line: String!
+  journeyTimeMinutes: Int
+  distanceKm: Float
+  connectionType: String
+}
+
+# School Types
+type School {
+  id: ID!
+  urn: String
+  name: String!
+  slug: String!
+  schoolType: String
+  phase: String
+  status: String
+
+  # Location
+  address: String!
+  postcode: String
+  area: Area
+  latitude: Float
+  longitude: Float
+
+  # Contact
+  telephone: String
+  website: String
+  email: String
+  headTeacher: String
+
+  # Demographics
+  gender: String
+  ageRangeLower: Int
+  ageRangeUpper: Int
+  religiousCharacter: String
+  admissionsPolicy: String
+
+  # Capacity
+  schoolCapacity: Int
+  totalPupils: Int
+  totalBoys: Int
+  totalGirls: Int
+  percentageFSM: Float
+
+  # Ofsted
+  ofstedRating: String
+  ofstedLastInspection: Date
+  ofstedReportUrl: String
+
+  # Performance
+  ks2ReadingProgress: Float
+  ks2WritingProgress: Float
+  ks2MathsProgress: Float
+  ks4Progress8: Float
+  ks4Attainment8: Float
+  ks4EbaccEntry: Float
+  ks5Progress: Float
+
+  # Transport
+  nearestStation: TransportStation
+  distanceToStation: Int
+}
+
+# Amenity Types
+type Amenity {
+  id: ID!
+  placeId: String!
+  name: String!
+  slug: String
+  category: String!
+  subcategory: String
+
+  # Location
+  address: String
+  postcode: String
+  area: Area
+  latitude: Float!
+  longitude: Float!
+
+  # Details
+  phone: String
+  website: String
+  openingHours: JSON
+  priceLevel: Int
+
+  # Ratings
+  rating: Float
+  ratingCount: Int
+
+  # Features
+  wheelchairAccessible: Boolean
+  parkingAvailable: Boolean
+  wifiAvailable: Boolean
+  outdoorSeating: Boolean
+  delivery: Boolean
+  takeaway: Boolean
+  reservations: Boolean
+
+  # Photos
+  photoUrl: String
+
+  # Transport
+  nearestStation: TransportStation
+  distanceToStation: Int
+
+  # Source
+  dataSource: String
+  sourceUpdatedAt: DateTime
+}
+
+# Crime Types
+type CrimeStatistic {
+  id: ID!
+  crimeId: String!
+
+  # Location
+  latitude: Float!
+  longitude: Float!
+  streetName: String
+  postcode: String
+  area: Area
+
+  # Crime details
+  category: String!
+  crimeType: String
+  month: Date!
+  outcomeStatus: String
+
+  # Context
+  locationType: String
+  locationSubtype: String
+  context: String
+}
+
+type CrimeSummary {
+  area: Area!
+  totalCrimes: Int!
+  violentCrimes: Int!
+  burglary: Int!
+  vehicleCrimes: Int!
+  crimeRatePer1000: Float
+  period: String!
+  trends: [CrimeTrend!]!
+}
+
+type CrimeTrend {
+  month: Date!
+  totalCrimes: Int!
+  violentCrimes: Int!
+  burglary: Int!
+  antiSocialBehaviour: Int!
+}
+
+# Energy Types
+type EnergyRating {
+  id: ID!
+  certificateHash: String!
+
+  # Property
+  address: String!
+  postcode: String!
+  property: Property
+  area: Area
+
+  # Energy performance
+  currentEnergyRating: String!
+  currentEnergyEfficiency: Int!
+  potentialEnergyRating: String!
+  potentialEnergyEfficiency: Int!
+
+  # Environmental impact
+  currentCO2Emissions: Float
+  potentialCO2Emissions: Float
+  currentCO2EmissionsPerFloorArea: Float
+
+  # Property details
+  propertyType: String
+  builtForm: String
+  floorArea: Float
+  numberRooms: Int
+  numberHabitableRooms: Int
+
+  # Construction
+  wallsDescription: String
+  roofDescription: String
+  floorDescription: String
+  windowsDescription: String
+  mainHeatingDescription: String
+  mainHeatingFuel: String
+  hotWaterDescription: String
+
+  # Costs
+  lightingCostCurrent: Float
+  heatingCostCurrent: Float
+  hotWaterCostCurrent: Float
+  totalEnergyCostCurrent: Float
+  totalEnergyCostPotential: Float
+  potentialSaving: Float
+
+  # Dates
+  inspectionDate: Date
+  certificateDate: Date
+  validUntil: Date
+}
+
+# Area Statistics
+type AreaStatistics {
+  id: ID!
+  area: Area!
+
+  # Transport
+  stationCount: Int
+  avgPtalScore: Float
+  tubeStations: Int
+  overgroundStations: Int
+  busStops: Int
+
+  # Schools
+  schoolCount: Int
+  primarySchools: Int
+  secondarySchools: Int
+  outstandingSchools: Int
+  goodSchools: Int
+  avgOfstedScore: Float
+
+  # Amenities
+  restaurantCount: Int
+  cafeCount: Int
+  supermarketCount: Int
+  gymCount: Int
+  parkCount: Int
+  avgAmenityRating: Float
+
+  # Crime
+  totalCrimesAnnual: Int
+  violentCrimesAnnual: Int
+  burglaryAnnual: Int
+  vehicleCrimesAnnual: Int
+  crimeRatePer1000: Float
+
+  # Energy
+  avgEnergyRating: String
+  avgEnergyEfficiency: Float
+  propertiesWithEPC: Int
+
+  # Overall scores (1-100)
+  transportScore: Int
+  educationScore: Int
+  lifestyleScore: Int
+  safetyScore: Int
+  sustainabilityScore: Int
+  overallScore: Int
+
+  lastCalculatedAt: DateTime
+}
+
+# Extended Area Type
+extend type Area {
+  # Transport
+  transportStations(radius: Int = 2000): [TransportStation!]!
+  nearestStation: TransportStation
+  ptalScore: Float
+
+  # Schools
+  schools: [School!]!
+  primarySchools: [School!]!
+  secondarySchools: [School!]!
+
+  # Amenities
+  amenities(category: String, limit: Int = 50): [Amenity!]!
+  restaurants(limit: Int = 20): [Amenity!]!
+  cafes(limit: Int = 20): [Amenity!]!
+
+  # Crime
+  crimeStatistics(months: Int = 12): CrimeSummary!
+  crimeHotspots(limit: Int = 10): [CrimeHotspot!]!
+
+  # Energy
+  energyRatings(limit: Int = 100): [EnergyRating!]!
+  avgEnergyRating: String
+  avgEnergyEfficiency: Float
+
+  # Comprehensive statistics
+  statistics: AreaStatistics!
+}
+
+type CrimeHotspot {
+  streetName: String!
+  crimeCount: Int!
+  crimeTypes: [String!]!
+  latitude: Float!
+  longitude: Float!
+}
+
+# Journey Planning
+type Journey {
+  from: String!
+  to: String!
+  duration: Int! # minutes
+  modes: [String!]!
+  legs: [JourneyLeg!]!
+  disruptions: [String!]
+}
+
+type JourneyLeg {
+  mode: String!
+  from: String!
+  to: String!
+  duration: Int!
+  lineId: String
+  lineName: String
+}
+
+# Search Types
+input AmenitySearchInput {
+  category: String
+  minRating: Float
+  maxPriceLevel: Int
+  wheelchairAccessible: Boolean
+  delivery: Boolean
+  nearStation: Boolean
+  radius: Int
+}
+
+input SchoolSearchInput {
+  schoolType: String
+  phase: String
+  ofstedRating: String
+  minCapacity: Int
+  maxCapacity: Int
+  gender: String
+}
+
+input TransportSearchInput {
+  stationType: String
+  zone: Int
+  line: String
+  stepFreeAccess: Boolean
+  minPtalScore: Float
+}
+
+# Queries
+extend type Query {
+  # Transport
+  transportStation(id: ID, stationId: String, slug: String): TransportStation
+  transportStations(filter: TransportSearchInput, limit: Int = 50): [TransportStation!]!
+  nearestStations(lat: Float!, lng: Float!, limit: Int = 5): [TransportStation!]!
+  journeyPlanner(from: String!, to: String!): Journey
+
+  # Schools
+  school(id: ID, urn: String, slug: String): School
+  schools(filter: SchoolSearchInput, areaId: ID, limit: Int = 50): [School!]!
+  topSchools(areaId: ID, limit: Int = 10): [School!]!
+
+  # Amenities
+  amenity(id: ID, placeId: String): Amenity
+  amenities(filter: AmenitySearchInput, areaId: ID, limit: Int = 50): [Amenity!]!
+  nearbyAmenities(lat: Float!, lng: Float!, category: String, radius: Int = 1000): [Amenity!]!
+
+  # Crime
+  crimeStatistics(areaId: ID!, months: Int = 12): CrimeSummary!
+  crimeTrends(areaId: ID!, months: Int = 24): [CrimeTrend!]!
+  crimeHotspots(areaId: ID!, limit: Int = 10): [CrimeHotspot!]!
+  compareAreaCrime(areaIds: [ID!]!): [CrimeSummary!]!
+
+  # Energy
+  energyRating(id: ID, certificateHash: String): EnergyRating
+  energyRatings(areaId: ID, propertyId: ID, minRating: String): [EnergyRating!]!
+  poorEnergyProperties(areaId: ID, limit: Int = 50): [EnergyRating!]!
+
+  # Area Statistics
+  areaStatistics(areaId: ID!): AreaStatistics!
+  compareAreas(areaIds: [ID!]!): [AreaStatistics!]!
+  topAreasByScore(scoreType: String!, limit: Int = 10): [AreaStatistics!]!
+}
+
+# Mutations
+extend type Mutation {
+  # Trigger data scraping
+  scrapeTransportData: Boolean!
+  scrapeEnergyData: Boolean!
+  scrapeCrimeData: Boolean!
+  scrapeAmenities: Boolean!
+  scrapeAllDataSources: Boolean!
+
+  # Refresh statistics
+  calculateAreaScores(areaId: ID!): AreaStatistics!
+  refreshAllStatistics: Boolean!
+}
+
+# Subscriptions
+extend type Subscription {
+  # Real-time transport updates
+  transportStatusUpdates(stationIds: [String!]): TransportStation!
+
+  # Crime alerts
+  crimeAlert(areaId: ID!): CrimeStatistic!
+}

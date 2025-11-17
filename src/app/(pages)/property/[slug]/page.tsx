@@ -10,6 +10,8 @@ import { PropertyCard } from '@/components/property/PropertyCard';
 import { PlanningCard } from '@/components/planning/PlanningCard';
 import { formatPrice, formatDate, formatArea } from '@/lib/utils/format';
 import { SchemaMarkup, generatePropertySchema } from '@/lib/seo/schema';
+import { ISRConfig } from '@/lib/isr/config';
+import { getTopPropertySlugs } from '@/lib/isr/utils';
 import type { PropertyWithSales, Property, PlanningApplication } from '@/types/property';
 
 interface PropertyDetailResponse {
@@ -19,12 +21,29 @@ interface PropertyDetailResponse {
   nearbyProperties: Property[];
 }
 
+// Generate static params for top properties at build time
+export async function generateStaticParams() {
+  const slugs = await getTopPropertySlugs(ISRConfig.buildLimits.properties as number);
+  return slugs.map((slug) => ({
+    slug,
+  }));
+}
+
+// Configure ISR revalidation
+export const revalidate = ISRConfig.revalidation.properties; // 6 hours
+export const dynamicParams = true; // Allow on-demand generation for new properties
+
 async function getPropertyData(slug: string): Promise<PropertyDetailResponse | null> {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
   const url = `${baseUrl}/api/properties/${slug}`;
 
   try {
-    const response = await fetch(url, { next: { revalidate: 3600 } }); // 1 hour cache
+    const response = await fetch(url, {
+      next: {
+        revalidate: ISRConfig.revalidation.properties,
+        tags: [ISRConfig.tags.properties, `property-${slug}`],
+      },
+    });
     if (!response.ok) return null;
     return await response.json();
   } catch (error) {

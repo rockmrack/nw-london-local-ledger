@@ -5,7 +5,11 @@
 
 import type { Metadata } from 'next';
 import { PropertyCard } from '@/components/property/PropertyCard';
+import { ISRConfig } from '@/lib/isr/config';
 import type { Property, PropertySearchResult } from '@/types/property';
+
+// Configure ISR for properties list page
+export const revalidate = ISRConfig.revalidation.properties; // 6 hours
 
 export const metadata: Metadata = {
   title: 'Properties for Sale in NW London | Property Prices & Data',
@@ -28,7 +32,12 @@ async function getProperties(searchParams: any): Promise<PropertySearchResult> {
   const url = `${baseUrl}/api/properties?${params.toString()}`;
 
   try {
-    const response = await fetch(url, { next: { revalidate: 300 } }); // 5 min cache
+    const response = await fetch(url, {
+      next: {
+        revalidate: ISRConfig.revalidation.properties,
+        tags: [ISRConfig.tags.properties, 'properties-list'],
+      },
+    });
     if (!response.ok) throw new Error('Failed to fetch properties');
     return await response.json();
   } catch (error) {

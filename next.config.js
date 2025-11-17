@@ -81,7 +81,7 @@ const nextConfig = {
     NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000',
   },
 
-  // Webpack configuration
+  // Webpack configuration with performance optimizations
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {
@@ -90,14 +90,69 @@ const nextConfig = {
         net: false,
         tls: false,
       };
+
+      // Split chunks for better caching and parallel loading
+      config.optimization.splitChunks = {
+        chunks: 'all',
+        cacheGroups: {
+          default: false,
+          vendors: false,
+          // Vendor chunk for node_modules
+          vendor: {
+            name: 'vendor',
+            chunks: 'all',
+            test: /node_modules/,
+            priority: 20,
+          },
+          // Common chunk for shared code
+          common: {
+            name: 'common',
+            minChunks: 2,
+            chunks: 'all',
+            priority: 10,
+            reuseExistingChunk: true,
+            enforce: true,
+          },
+          // React/Next.js framework chunk
+          framework: {
+            name: 'framework',
+            chunks: 'all',
+            test: /[\\/]node_modules[\\/](react|react-dom|next)[\\/]/,
+            priority: 40,
+            enforce: true,
+          },
+        },
+      };
     }
     return config;
   },
 
-  // Experimental features
+  // ISR and Static Generation Configuration
+  staticPageGenerationTimeout: 120, // 2 minutes per page
+
+  // Experimental features for better performance
   experimental: {
     serverActions: true,
-    serverComponentsExternalPackages: ['pg', 'postgres'],
+    serverComponentsExternalPackages: ['pg', 'postgres', '@elastic/elasticsearch'],
+    // Optimize package imports
+    optimizePackageImports: ['@elastic/elasticsearch', 'postgres', 'redis', 'bullmq'],
+    // ISR optimizations
+    isrMemoryCacheSize: 50, // MB
+    workerThreads: false,
+    cpus: 4,
+    // Partial pre-rendering for dynamic content
+    ppr: true,
+  },
+
+  // Production browser source maps disabled for performance
+  productionBrowserSourceMaps: false,
+
+  // Compiler optimizations
+  compiler: {
+    // Remove console logs in production (except error and warn)
+    removeConsole: process.env.NODE_ENV === 'production' ? {
+      exclude: ['error', 'warn'],
+    } : false,
   },
 };
 
