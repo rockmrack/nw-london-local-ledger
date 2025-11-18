@@ -1,0 +1,225 @@
+{
+  "nwLondonStreets": {
+    "NW1": {
+      "area": "Camden Town, Regent's Park, Somers Town",
+      "majorStreets": [
+        "Albany Street", "Arlington Road", "Augustus Street", "Bayham Street",
+        "Britannia Street", "Buck Street", "Camden High Street", "Camden Road",
+        "Camden Street", "Chalton Street", "Churchway", "Clarence Way",
+        "Cobourg Street", "Crowndale Road", "Delancey Street", "Drummond Street",
+        "Euston Road", "Eversholt Street", "Georgiana Street", "Gloucester Avenue",
+        "Goodge Street", "Gower Street", "Grafton Way", "Great Portland Street",
+        "Hampstead Road", "Harrington Square", "Hawley Road", "Inverness Street",
+        "Jamestown Road", "Kentish Town Road", "Mornington Crescent", "Mornington Street",
+        "Mornington Terrace", "Oakley Square", "Pancras Road", "Park Village East",
+        "Parkway", "Phoenix Road", "Plender Street", "Prince of Wales Road",
+        "Pratt Street", "Robert Street", "Royal College Street", "St Pancras Way",
+        "Stanhope Street", "Stanway Street", "Tolmers Square", "Werrington Street"
+      ]
+    },
+    "NW2": {
+      "area": "Cricklewood, Dollis Hill, Neasden, Willesden Green",
+      "majorStreets": [
+        "Anson Road", "Ashford Road", "Brentfield Road", "Brierley Road",
+        "Broad Walk", "Brondesbury Park", "Chamberlayne Road", "Chapters Way",
+        "Chichele Road", "Church Road", "Cricklewood Broadway", "Cricklewood Lane",
+        "Dartmouth Road", "Denzil Road", "Dollis Hill Lane", "Donnington Road",
+        "Dudden Hill Lane", "Edgware Road", "Gladstone Park Gardens", "Grange Road",
+        "Harlesden Gardens", "High Road Willesden", "Kensal Rise", "Lidding Road",
+        "Manor Park Road", "Melrose Avenue", "Neasden Lane", "North Circular Road",
+        "Oxgate Lane", "Park Avenue North", "Pound Lane", "Shoot Up Hill",
+        "St Gabriel's Road", "Station Road", "The Pentlands", "Walm Lane",
+        "Willesden Lane", "Windsor Road"
+      ]
+    },
+    "NW3": {
+      "area": "Belsize Park, Frognal, Hampstead, Primrose Hill, Swiss Cottage",
+      "majorStreets": [
+        "Adelaide Road", "Avenue Road", "Bayswater Road", "Belsize Avenue",
+        "Belsize Grove", "Belsize Lane", "Belsize Park Gardens", "Belsize Road",
+        "Branston Road", "Broadhurst Gardens", "Cannon Hill", "Cannon Place",
+        "Chalcot Crescent", "Chalcot Road", "Chalcot Square", "College Crescent",
+        "Compayne Gardens", "Crediton Hill", "Downshire Hill", "Eton Avenue",
+        "Fellows Road", "Finchley Road", "Flask Walk", "Frognal", "Frognal Lane",
+        "Frognal Rise", "Gayton Road", "Greencroft Gardens", "Hampstead Grove",
+        "Hampstead High Street", "Hampstead Hill Gardens", "Haverstock Hill",
+        "Heath Drive", "Heath Hurst Road", "Heath Street", "Hereford Road",
+        "Holly Hill", "Holly Mount", "Holly Walk", "Keats Grove", "Kings College Road",
+        "Lambolle Road", "Lancaster Grove", "Lindfield Gardens", "Lyndhurst Road",
+        "Mansfield Road", "New End", "New End Square", "Prince Arthur Road",
+        "Prince of Wales Road", "Primrose Hill Road", "Redington Road", "Rosslyn Hill",
+        "South End Green", "South End Road", "South Hill Park", "Steeles Road",
+        "Swiss Cottage", "Templewood Avenue", "Well Road", "West End Lane",
+        "Winchester Road"
+      ]
+    },
+    "NW4": {
+      "area": "Brent Cross, Hendon, Temple Fortune",
+      "majorStreets": [
+        "Aegon Road", "Bell Lane", "Brent Street", "Bunns Lane", "Central Circus",
+        "Church End", "Church Road", "Colindeep Lane", "Cool Oak Lane",
+        "Cool Oak Lane", "Deansbrook Road", "Finchley Lane", "Finchley Road",
+        "Golders Green Road", "Great North Way", "Greyhound Hill", "Hendon Lane",
+        "Hendon Park Row", "Hendon Way", "Holders Hill Road", "Holders Hill Road",
+        "Hoop Lane", "Lowlands Road", "Manor Hall Avenue", "Marsh Lane",
+        "Middleway", "Mill Hill Broadway", "North Circular Road", "Page Street",
+        "Parson Street", "Queens Road", "Raleigh Drive", "Ravensdale Avenue",
+        "Selvage Lane", "Station Road", "Sunny Gardens Road", "Sunningfields Road",
+        "Temple Fortune Lane", "The Burroughs", "Watford Way", "West Hendon Broadway"
+      ]
+    },
+    "NW5": {
+      "area": "Dartmouth Park, Gospel Oak, Kentish Town, Tufnell Park",
+      "majorStreets": [
+        "Agar Grove", "Anson Road", "Bartholomew Road", "Brecknock Road",
+        "Burghley Road", "Camden Road", "Carleton Road", "Castle Road",
+        "Caversham Road", "Chetwynd Road", "Dartmouth Park Avenue", "Dartmouth Park Hill",
+        "Dartmouth Park Road", "Fortess Road", "Fortress Walk", "Gaisford Street",
+        "Gordon House Road", "Grafton Road", "Highgate Road", "Highgate West Hill",
+        "Holmes Road", "Huddleston Road", "Islip Street", "Junction Road",
+        "Kelly Street", "Kentish Town Road", "Lady Margaret Road", "Leighton Road",
+        "Lissenden Gardens", "Magdala Avenue", "Malden Road", "Prince of Wales Road",
+        "Queen's Crescent", "Sandall Road", "St Albans Road", "Tufnell Park Road",
+        "Vicars Road", "Willes Road", "York Rise"
+      ]
+    },
+    "NW6": {
+      "area": "Brondesbury, Kilburn, Queens Park, South Hampstead, West Hampstead",
+      "majorStreets": [
+        "Abbey Road", "Aberdare Gardens", "Acol Road", "Alpha Place",
+        "Basing Street", "Boundary Road", "Broadley Street", "Brondesbury Park",
+        "Brondesbury Road", "Brondesbury Villas", "Cambridge Avenue", "Carlton Hill",
+        "Carlton Vale", "Chevening Road", "Chippenham Road", "Cleve Road",
+        "Compayne Gardens", "Crediton Hill", "Dennington Park Road", "Donaldson Road",
+        "Elgin Avenue", "Fernhead Road", "Finchley Road", "Fortune Green Road",
+        "Gascony Avenue", "Greville Place", "Harvist Road", "High Road Kilburn",
+        "Hilgrove Road", "Iverson Road", "Keslake Road", "Kilburn High Road",
+        "Kilburn Lane", "Kilburn Park Road", "Lonsdale Road", "Mapesbury Road",
+        "Maida Vale", "Mill Lane", "Mortimer Crescent", "Priory Road", "Queens Grove",
+        "Quex Road", "Salusbury Road", "Shoot Up Hill", "Sumatra Road",
+        "West End Lane", "Willesden Lane"
+      ]
+    },
+    "NW7": {
+      "area": "Mill Hill",
+      "majorStreets": [
+        "Apex Corner", "Bittacy Hill", "Broadway", "Burtonhole Lane",
+        "Deans Lane", "Dollis Brook", "Drylands Road", "Flower Lane",
+        "Hammers Lane", "Hartley Avenue", "Hale Lane", "Lawrence Street",
+        "Marsh Lane", "Mill Hill Broadway", "Mill Hill Circus", "Mill Hill East",
+        "Milespit Hill", "Page Street", "Partingdale Lane", "Purcell Crescent",
+        "Ridgeway", "Salcombe Gardens", "Selvage Lane", "Station Road",
+        "The Broadway", "The Fairway", "The Ridgeway", "Totteridge Common",
+        "Totteridge Lane", "Wise Lane"
+      ]
+    },
+    "NW8": {
+      "area": "St John's Wood",
+      "majorStreets": [
+        "Abbey Road", "Acacia Road", "Allitsen Road", "Alpha Place",
+        "Avenue Road", "Blenheim Road", "Boundary Road", "Carlton Hill",
+        "Charlbert Street", "Circus Road", "Clifton Hill", "Cunningham Place",
+        "Elm Tree Road", "Finchley Road", "Grove End Road", "Hamilton Terrace",
+        "Harley Road", "Lanark Road", "Langford Place", "Lisson Grove",
+        "Lodge Road", "Lords Cricket Ground", "Loudoun Road", "Maida Vale",
+        "Marlborough Hill", "Marlborough Place", "Melina Place", "Norfolk Road",
+        "Ordnance Hill", "Park Road", "Prince Albert Road", "Primrose Hill Road",
+        "Queen's Terrace", "Regent's Park", "St Edmund's Terrace", "St John's Wood High Street",
+        "St John's Wood Park", "St John's Wood Road", "St John's Wood Terrace",
+        "Townshend Road", "Wellington Place", "Wellington Road", "Woronzow Road"
+      ]
+    },
+    "NW9": {
+      "area": "Colindale, Kingsbury, The Hyde, West Hendon",
+      "majorStreets": [
+        "Aerodrome Road", "Bacon Lane", "Beaufort Park", "Booth Road",
+        "Broadway", "Burnt Oak Broadway", "Capitol Way", "Church Lane",
+        "Colindale Avenue", "Colindeep Lane", "Cool Oak Lane", "Convent Way",
+        "Edgware Road", "Fryent Way", "Graham Park Way", "Hay Lane",
+        "Hyde Estate Road", "Kingsbury Circle", "Kingsbury Road", "Lanacre Avenue",
+        "Montrose Avenue", "Old Church Lane", "Perryfield Way", "Princes Avenue",
+        "Queensbury Circle", "Roe Green", "Rushgrove Avenue", "Salmon Street",
+        "Sheaveshill Avenue", "Slough Lane", "Station Road", "The Broadway",
+        "The Concourse", "The Hyde", "Varley Parade", "Watling Avenue",
+        "West Hendon Broadway", "Woodfield Avenue"
+      ]
+    },
+    "NW10": {
+      "area": "Harlesden, Kensal Green, Park Royal, Stonebridge, Willesden",
+      "majorStreets": [
+        "Acton Lane", "Barlby Road", "Brentfield Road", "Bridge Road",
+        "Chamberlayne Road", "Channel Gate Road", "Church Road", "Coronet Street",
+        "Craven Park", "Culling Road", "Harlesden High Street", "Harlesden Road",
+        "Harrow Road", "High Street Harlesden", "Kendal Road", "Kensal Rise",
+        "Manor Park Road", "Mitre Way", "North Circular Road", "Park Royal Road",
+        "Scrubs Lane", "Station Road", "Stonebridge Park", "Twyford Abbey Road",
+        "Victoria Road", "Waldo Road", "Willesden High Road", "Willesden Junction",
+        "Wrottesley Road"
+      ]
+    },
+    "NW11": {
+      "area": "Golders Green, Hampstead Garden Suburb",
+      "majorStreets": [
+        "Armitage Road", "Asmuns Hill", "Brim Hill", "Bridge Lane",
+        "Central Square", "Corringham Road", "Corringway", "Creighton Avenue",
+        "Finchley Road", "Golders Green Road", "Heath Drive", "Hendon Avenue",
+        "Hocroft Avenue", "Holne Chase", "Lyttleton Road", "Market Place",
+        "Meadway", "Mutton Lane", "North End Road", "North Square",
+        "Northway", "Ossulton Way", "Princes Park Avenue", "Rotherwick Road",
+        "Temple Fortune Lane", "The Bishop's Avenue", "The Limes Avenue",
+        "Turner Drive", "West Heath Avenue", "Wildwood Road"
+      ]
+    }
+  },
+  "renovationHotspots": {
+    "highDemand": [
+      "Hampstead High Street", "Finchley Road", "West End Lane", "Belsize Avenue",
+      "Swiss Cottage", "Primrose Hill Road", "St John's Wood High Street",
+      "Avenue Road", "Rosslyn Hill", "Abbey Road", "Frognal"
+    ],
+    "emergingAreas": [
+      "Cricklewood Broadway", "Kilburn High Road", "West Hampstead",
+      "Queens Park", "Kentish Town Road", "Gospel Oak", "Tufnell Park",
+      "Brondesbury Park", "Willesden Green", "Mill Hill"
+    ],
+    "conservation": [
+      "Hampstead Village", "Hampstead Garden Suburb", "Primrose Hill",
+      "St John's Wood", "Belsize Park Conservation Area", "Flask Walk",
+      "Holly Bush Steps", "Frognal Conservation Area"
+    ]
+  },
+  "propertyTypes": {
+    "victorian": {
+      "commonStreets": [
+        "Belsize Avenue", "Lyndhurst Road", "Templewood Avenue", "Dartmouth Park Road",
+        "Tufnell Park Road", "St Albans Road", "Fortune Green Road"
+      ],
+      "characteristics": "Bay windows, high ceilings, original features, sash windows",
+      "commonWork": "Sash window restoration, damp proofing, roof repairs, basement conversions"
+    },
+    "edwardian": {
+      "commonStreets": [
+        "Brondesbury Park", "Mapesbury Road", "Crediton Hill", "Corringham Road",
+        "Wildwood Road", "Hampstead Way"
+      ],
+      "characteristics": "Larger rooms, red brick, decorative porches, tiled paths",
+      "commonWork": "Loft conversions, kitchen extensions, window replacement, rendering"
+    },
+    "georgian": {
+      "commonStreets": [
+        "Flask Walk", "Church Row", "Hamilton Terrace", "Park Village East",
+        "South End Green", "Downshire Hill"
+      ],
+      "characteristics": "Symmetrical facades, sash windows, wrought iron railings",
+      "commonWork": "Heritage restoration, lime plastering, traditional joinery, conservation work"
+    },
+    "modernApartments": {
+      "commonStreets": [
+        "Finchley Road", "Adelaide Road", "Avenue Road", "Swiss Cottage",
+        "Eton Avenue", "Circus Road"
+      ],
+      "characteristics": "Purpose-built blocks, balconies, communal areas",
+      "commonWork": "Bathroom refits, kitchen renovations, flooring, decorating"
+    }
+  }
+}

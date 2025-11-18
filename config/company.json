@@ -15,26 +15,51 @@
     "website": "https://www.hampsteadrenovations.co.uk"
   },
   "branding": {
-    "tagline": "Your Trusted Partner for North West London Property Information",
-    "description": "Hampstead Renovations provides comprehensive property data, planning applications, and local area insights for North West London. Specializing in property renovation, development, and market intelligence.",
+    "tagline": "North West London's Leading Renovation & Property Maintenance Experts",
+    "description": "Hampstead Renovations provides comprehensive renovation, property maintenance, and emergency repair services across all of North West London. From full-scale renovations to 24/7 emergency response, we're your trusted partner for all property needs.",
     "keywords": [
       "Hampstead Renovations",
       "North West London property",
-      "property renovation",
+      "property renovation NW London",
+      "property maintenance NW London",
+      "emergency repairs NW London",
       "planning applications",
       "property data",
-      "NW London property search",
+      "NW London renovation",
+      "kitchen renovation",
+      "bathroom renovation",
+      "loft conversion",
+      "basement conversion",
+      "24/7 emergency plumber",
+      "emergency electrician",
       "property development London",
-      "Hampstead property services"
+      "Hampstead property services",
+      "Victorian house renovation",
+      "Edwardian property restoration",
+      "conservation area work"
     ]
   },
   "services": [
+    "Full Property Renovations",
+    "Kitchen & Bathroom Renovations",
+    "Loft & Basement Conversions",
+    "Extensions & Structural Work",
+    "Period Property Restoration",
+    "Conservation Area Expertise",
+    "Property Maintenance Contracts",
+    "24/7 Emergency Repairs",
+    "Plumbing & Heating Services",
+    "Electrical Services",
+    "Roofing & Guttering",
+    "Decorating & Flooring",
+    "Project Management",
+    "Planning Application Support",
+    "Building Control Liaison",
     "Property Data & Market Intelligence",
-    "Planning Application Insights",
-    "Property Renovation Services",
-    "Development Opportunities",
-    "Local Area Analysis",
-    "Property Valuation Data"
+    "Street-Level Analytics",
+    "Contractor Network Access",
+    "Materials Sourcing & Supply",
+    "Emergency Response (25-45 min response time)"
   ],
   "socialMedia": {
     "twitter": "@HampsteadReno",
@@ -43,26 +68,86 @@
     "instagram": "@hampsteadrenovations"
   },
   "operatingHours": {
-    "monday": "9:00 AM - 6:00 PM",
-    "tuesday": "9:00 AM - 6:00 PM",
-    "wednesday": "9:00 AM - 6:00 PM",
-    "thursday": "9:00 AM - 6:00 PM",
-    "friday": "9:00 AM - 6:00 PM",
-    "saturday": "10:00 AM - 4:00 PM",
-    "sunday": "Closed"
+    "office": {
+      "monday": "9:00 AM - 6:00 PM",
+      "tuesday": "9:00 AM - 6:00 PM",
+      "wednesday": "9:00 AM - 6:00 PM",
+      "thursday": "9:00 AM - 6:00 PM",
+      "friday": "9:00 AM - 6:00 PM",
+      "saturday": "10:00 AM - 4:00 PM",
+      "sunday": "Closed"
+    },
+    "emergency": "24/7 - 365 days a year",
+    "emergencyPhone": "07459 345456"
   },
   "serviceAreas": [
-    "Hampstead",
-    "Belsize Park",
-    "Swiss Cottage",
-    "West Hampstead",
-    "Primrose Hill",
-    "St John's Wood",
-    "Camden",
-    "Finchley",
-    "Golders Green",
-    "Kilburn"
+    "NW1 - Camden Town, Regent's Park, Somers Town",
+    "NW2 - Cricklewood, Dollis Hill, Neasden, Willesden Green",
+    "NW3 - Belsize Park, Frognal, Hampstead, Primrose Hill, Swiss Cottage",
+    "NW4 - Brent Cross, Hendon, Temple Fortune",
+    "NW5 - Dartmouth Park, Gospel Oak, Kentish Town, Tufnell Park",
+    "NW6 - Brondesbury, Kilburn, Queens Park, South Hampstead, West Hampstead",
+    "NW7 - Mill Hill",
+    "NW8 - St John's Wood",
+    "NW9 - Colindale, Kingsbury, The Hyde, West Hendon",
+    "NW10 - Harlesden, Kensal Green, Park Royal, Stonebridge, Willesden",
+    "NW11 - Golders Green, Hampstead Garden Suburb"
   ],
+  "coverageDetails": {
+    "totalStreets": "500+",
+    "totalProperties": "50,000+",
+    "emergencyResponseTime": {
+      "NW3": "25 minutes",
+      "NW8": "25 minutes",
+      "NW11": "30 minutes",
+      "NW1": "30 minutes",
+      "NW5": "35 minutes",
+      "NW6": "30 minutes",
+      "NW2": "40 minutes",
+      "NW4": "40 minutes",
+      "NW7": "45 minutes",
+      "NW9": "45 minutes",
+      "NW10": "40 minutes"
+    },
+    "activeContractors": "150+",
+    "completedProjects": "2,500+",
+    "customerRating": 4.8,
+    "repeatCustomerRate": "85%"
+  },
+  "specializations": [
+    "Victorian & Edwardian Property Restoration",
+    "Conservation Area Work (NW3, NW8, NW11)",
+    "Listed Building Renovations",
+    "Period Feature Restoration",
+    "Modern Extensions to Period Properties",
+    "Basement Waterproofing & Conversions",
+    "Loft Conversions (all types)",
+    "Kitchen Extensions",
+    "Sash Window Restoration",
+    "Heritage Lime Plastering",
+    "Traditional Joinery",
+    "Energy Efficiency Upgrades",
+    "Smart Home Integration",
+    "Multi-property Portfolio Management"
+  ],
+  "maintenanceContracts": {
+    "bronze": {
+      "price": "£299/year",
+      "features": ["1 annual service", "1 emergency callout", "Basic plumbing & heating"]
+    },
+    "silver": {
+      "price": "£599/year",
+      "features": ["2 annual services", "2 emergency callouts", "Full plumbing & electrical", "Priority booking"]
+    },
+    "gold": {
+      "price": "£999/year",
+      "features": ["4 quarterly services", "4 emergency callouts", "All trades covered", "10% discount on work", "Priority 24/7 response"]
+    },
+    "platinum": {
+      "price": "£1,899/year",
+      "features": ["Monthly inspections", "Unlimited emergency callouts", "Full property maintenance", "20% discount on renovations", "Dedicated account manager", "Priority response"]
+    }
+  },
   "legal": {
     "companyNumber": "TBD",
     "vatNumber": "TBD",
