@@ -8,6 +8,7 @@ import { performance } from 'perf_hooks';
 import { metrics, memoryUsage, cpuUsage } from './metrics';
 import { AlertManager } from './alert-manager';
 import { PerformanceStore } from './performance-store';
+import { log } from '@/lib/logger';
 
 export interface MonitoringConfig {
   enabled: boolean;
@@ -177,7 +178,7 @@ class MonitoringService extends EventEmitter {
       this.alertManager.checkSlowQuery(query, duration, metadata);
 
       // Log slow query
-      console.warn('[SLOW_QUERY]', {
+      log.warn('[SLOW_QUERY]', {
         query: query.substring(0, 200),
         duration,
         ...metadata
@@ -377,7 +378,7 @@ class MonitoringService extends EventEmitter {
         await this.performanceStore.aggregate();
         await this.performanceStore.cleanup(this.config.retentionDays);
       } catch (error) {
-        console.error('Failed to aggregate metrics:', error);
+        log.error('Failed to aggregate metrics:', error);
       }
     }, 60000); // Every minute
   }

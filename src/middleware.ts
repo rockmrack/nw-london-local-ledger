@@ -6,11 +6,45 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { monitoringService } from '@/lib/monitoring/monitoring-service';
+import { LRUCache } from 'lru-cache';
+
+// Rate limiter configuration
+// Note: In a distributed Edge environment, this cache is per-isolate.
+// For strict global rate limiting, use Redis (e.g., @upstash/ratelimit).
+const rateLimit = new LRUCache<string, number>({
+  max: 500, // Track up to 500 unique IPs
+  ttl: 60 * 1000, // 1 minute window
+});
+
+const RATE_LIMIT = 100; // Requests per minute per IP
 
 export function middleware(request: NextRequest) {
   const startTime = Date.now();
   const method = request.method;
   const path = request.nextUrl.pathname;
+  const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+
+  // 1. Rate Limiting Strategy
+  if (!path.startsWith('/_next') && !path.startsWith('/static')) {
+    const currentUsage = rateLimit.get(ip) || 0;
+    
+    if (currentUsage >= RATE_LIMIT) {
+      return new NextResponse(JSON.stringify({ 
+        error: 'Too Many Requests', 
+        message: 'Please try again later.' 
+      }), {
+        status: 429,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-RateLimit-Limit': RATE_LIMIT.toString(),
+          'X-RateLimit-Remaining': '0',
+          'Retry-After': '60'
+        }
+      });
+    }
+    
+    rateLimit.set(ip, currentUsage + 1);
+  }
 
   // Start monitoring operation if not a static asset
   let requestId = '';

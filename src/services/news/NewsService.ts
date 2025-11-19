@@ -7,6 +7,7 @@ import sql from '@/lib/db/client';
 import type { NewsArticle, ArticleTag, NewsSource } from '@/types/news';
 import { slugify } from '@/lib/utils/slugify';
 import { aiContentService } from '@/ai/content-generation/ContentGenerationService';
+import { linkInjector } from '@/services/LinkInjector';
 
 export class NewsService {
   /**
@@ -136,11 +137,17 @@ export class NewsService {
         throw new Error(`Content validation failed: ${validation.issues.join(', ')}`);
       }
 
+      // Inject Authority Bridge links
+      let finalContent = linkInjector.injectContextualLinks(aiContent.content);
+      
+      // Append Featured Expert block
+      finalContent += '\n\n' + linkInjector.generateFeaturedExpertBlock();
+
       // Create article
       const article = await this.createArticle({
         title: aiContent.title,
         excerpt: aiContent.excerpt,
-        content: aiContent.content,
+        content: finalContent,
         articleType: 'news',
         source: 'ai_generated',
         relatedPlanningId: planningApplication.id,
@@ -177,10 +184,16 @@ export class NewsService {
       // Generate content
       const aiContent = await aiContentService.generateMarketReport(areaName, weeklyStats);
 
+      // Inject Authority Bridge links
+      let finalContent = linkInjector.injectContextualLinks(aiContent.content);
+      
+      // Append Featured Expert block
+      finalContent += '\n\n' + linkInjector.generateFeaturedExpertBlock();
+
       // Create article
       const article = await this.createArticle({
         title: aiContent.title,
-        content: aiContent.content,
+        content: finalContent,
         excerpt: aiContent.content.substring(0, 200) + '...',
         articleType: 'analysis',
         source: 'ai_generated',
