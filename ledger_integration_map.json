@@ -1,0 +1,96 @@
+{
+  "meta": {
+    "description": "Authority Bridge Integration Map",
+    "version": "1.0",
+    "target_domain": "https://hampsteadrenovations.co.uk",
+    "instructions": "Use this map to programmatically link from the Ledger (News Site) to the Renovation Site (Money Site)."
+  },
+  "service_mapping": {
+    "planning_applications": {
+      "keywords": ["planning permission", "council approval", "building regulations", "permitted development"],
+      "target_slug": "planning-applications",
+      "anchor_text_templates": [
+        "expert planning advice",
+        "planning application services",
+        "help with planning permission in {location}"
+      ]
+    },
+    "extensions": {
+      "keywords": ["house extension", "side return", "rear extension", "wraparound extension"],
+      "target_slug": "house-extensions",
+      "anchor_text_templates": [
+        "specialist extension builders",
+        "house extension cost calculator",
+        "view extension projects in {location}"
+      ]
+    },
+    "loft_conversions": {
+      "keywords": ["loft conversion", "dormer", "mansard", "attic conversion"],
+      "target_slug": "loft-conversions",
+      "anchor_text_templates": [
+        "loft conversion specialists",
+        "add value with a loft conversion",
+        "loft conversion ideas"
+      ]
+    },
+    "basements": {
+      "keywords": ["basement conversion", "cellar", "underpinning", "excavation"],
+      "target_slug": "basement-conversion",
+      "anchor_text_templates": [
+        "basement conversion experts",
+        "underground living space",
+        "basement excavation services"
+      ]
+    },
+    "kitchens": {
+      "keywords": ["kitchen renovation", "new kitchen", "kitchen design", "kitchen fitter"],
+      "target_slug": "kitchen-renovation",
+      "anchor_text_templates": [
+        "luxury kitchen renovation",
+        "kitchen design and installation",
+        "kitchen fitters in {location}"
+      ]
+    },
+    "bathrooms": {
+      "keywords": ["bathroom renovation", "new bathroom", "wet room", "shower installation"],
+      "target_slug": "bathroom-renovation",
+      "anchor_text_templates": [
+        "bathroom renovation specialists",
+        "luxury bathroom design",
+        "bathroom installers near {location}"
+      ]
+    },
+    "architects": {
+      "keywords": ["architect", "architectural design", "blueprints", "drawings"],
+      "target_slug": "architectural-design",
+      "anchor_text_templates": [
+        "local architectural designers",
+        "RIBA qualified architects",
+        "architectural drawings service"
+      ]
+    },
+    "structural": {
+      "keywords": ["structural engineer", "beams", "calculations", "load bearing"],
+      "target_slug": "structural-engineering",
+      "anchor_text_templates": [
+        "structural engineering calculations",
+        "structural surveys",
+        "steel beam installation"
+      ]
+    }
+  },
+  "dynamic_linking_rules": {
+    "street_level": {
+      "trigger": "When a news article mentions a specific street",
+      "action": "Link to the specific street SEO page",
+      "url_pattern": "/streets/{postcode}/{service_slug}-{street_slug}-{postcode}.html",
+      "example": "News about 'Fitzjohns Avenue' -> Link to '/streets/nw3/kitchen-renovation-fitzjohns-avenue-nw3.html'"
+    },
+    "postcode_level": {
+      "trigger": "When a news article mentions a general postcode area",
+      "action": "Link to the postcode service hub",
+      "url_pattern": "/{service_slug}/{postcode}.html",
+      "example": "News about 'NW3 property market' -> Link to '/house-extensions/nw3.html'"
+    }
+  }
+}
