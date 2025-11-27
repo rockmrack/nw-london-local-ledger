@@ -12,11 +12,12 @@ import { LRUCache } from 'lru-cache';
 // Note: In a distributed Edge environment, this cache is per-isolate.
 // For strict global rate limiting, use Redis (e.g., @upstash/ratelimit).
 const rateLimit = new LRUCache<string, number>({
-  max: 500, // Track up to 500 unique IPs
+  max: 10000, // Track up to 10,000 unique IPs (increased from 500 for better protection)
   ttl: 60 * 1000, // 1 minute window
 });
 
 const RATE_LIMIT = 100; // Requests per minute per IP
+const RATE_LIMIT_API = 50; // Stricter limit for API routes
 
 export function middleware(request: NextRequest) {
   const startTime = Date.now();
@@ -27,8 +28,9 @@ export function middleware(request: NextRequest) {
   // 1. Rate Limiting Strategy
   if (!path.startsWith('/_next') && !path.startsWith('/static')) {
     const currentUsage = rateLimit.get(ip) || 0;
+    const limit = path.startsWith('/api/') ? RATE_LIMIT_API : RATE_LIMIT;
     
-    if (currentUsage >= RATE_LIMIT) {
+    if (currentUsage >= limit) {
       return new NextResponse(JSON.stringify({ 
         error: 'Too Many Requests', 
         message: 'Please try again later.' 
@@ -36,7 +38,7 @@ export function middleware(request: NextRequest) {
         status: 429,
         headers: {
           'Content-Type': 'application/json',
-          'X-RateLimit-Limit': RATE_LIMIT.toString(),
+          'X-RateLimit-Limit': limit.toString(),
           'X-RateLimit-Remaining': '0',
           'Retry-After': '60'
         }

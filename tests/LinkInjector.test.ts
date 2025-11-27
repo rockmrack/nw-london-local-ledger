@@ -19,6 +19,10 @@ describe('LinkInjector', () => {
     expect(injector).toBeDefined();
   });
 
+  test('should report ready status when initialized', () => {
+    expect(injector.isReady()).toBe(true);
+  });
+
   test('should inject contextual links', () => {
     const content = "We are discussing planning permission for a new project.";
     const result = injector.injectContextualLinks(content);
@@ -46,5 +50,41 @@ describe('LinkInjector', () => {
     
     expect(link).toContain('href="https://hampsteadrenovations.co.uk/streets/nw8/house-extensions-abbey-road-nw8.html"');
     expect(link).toContain('House Extension projects on Abbey Road');
+  });
+
+  test('should return empty string for unknown service key', () => {
+    const block = injector.generateFeaturedExpertBlock('unknown-service', 'NW3');
+    expect(block).toBe('');
+  });
+});
+
+describe('LinkInjector - Graceful Degradation', () => {
+  test('should handle missing integration map gracefully', () => {
+    const injector = new LinkInjector('/non/existent/path.json');
+    
+    expect(injector).toBeDefined();
+    expect(injector.isReady()).toBe(false);
+  });
+
+  test('should return content unchanged when not initialized', () => {
+    const injector = new LinkInjector('/non/existent/path.json');
+    const content = "This is some content about planning permission.";
+    
+    const result = injector.injectContextualLinks(content);
+    expect(result).toBe(content);
+  });
+
+  test('should return empty string for expert block when not initialized', () => {
+    const injector = new LinkInjector('/non/existent/path.json');
+    
+    const block = injector.generateFeaturedExpertBlock('basements', 'NW3');
+    expect(block).toBe('');
+  });
+
+  test('should return empty string for street link when not initialized', () => {
+    const injector = new LinkInjector('/non/existent/path.json');
+    
+    const link = injector.generateStreetLink('Abbey Road', 'NW8');
+    expect(link).toBe('');
   });
 });
