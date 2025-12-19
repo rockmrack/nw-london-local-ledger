@@ -223,6 +223,38 @@ const nextConfig = {
         crypto: false,
       };
 
+      // Ignore server-only packages and WASM modules in client bundle
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        '@tensorflow/tfjs-node': false,
+        '@mapbox/node-pre-gyp': false,
+        'mock-aws-s3': false,
+        'aws-sdk': false,
+        'nock': false,
+      };
+    } else {
+      // Server-side: Handle missing WASM modules gracefully
+      config.resolve.alias = {
+        ...config.resolve.alias,
+      };
+    }
+
+    // Webpack ignore plugin to handle missing WASM modules
+    config.plugins = config.plugins || [];
+    config.plugins.push(
+      new (require('webpack').IgnorePlugin)({
+        checkResource(resource) {
+          // Ignore WASM module imports
+          return resource.includes('pkg/data-transformer') ||
+                 resource.includes('pkg/geo-calculator') ||
+                 resource.includes('pkg/property-processor') ||
+                 resource.includes('pkg/stats-engine') ||
+                 resource.includes('pkg/search-optimizer');
+        },
+      })
+    );
+
+    if (!isServer) {
       // Advanced chunk splitting for optimal loading
       config.optimization.splitChunks = {
         chunks: 'all',
@@ -281,20 +313,8 @@ const nextConfig = {
       // Minification with aggressive settings
       if (!dev) {
         config.optimization.minimize = true;
-        config.optimization.minimizer[0].options.terserOptions = {
-          compress: {
-            drop_console: true,
-            drop_debugger: true,
-            pure_funcs: ['console.log', 'console.info'],
-            passes: 2,
-          },
-          mangle: {
-            safari10: true,
-          },
-          format: {
-            comments: false,
-          },
-        };
+        // Note: Next.js handles minification configuration internally
+        // Custom terser options can be set via swcMinify or other Next.js config options
       }
     }
 
@@ -313,15 +333,17 @@ const nextConfig = {
 
   // Experimental features for streaming and performance
   experimental: {
-    serverActions: true,
-    serverComponentsExternalPackages: ['pg', 'postgres', '@elastic/elasticsearch'],
-    // React 18 Streaming
-    runtime: 'nodejs',
+    serverActions: {
+      bodySizeLimit: '2mb',
+    },
+    serverComponentsExternalPackages: [
+      'pg',
+      '@tensorflow/tfjs-node',
+      '@mapbox/node-pre-gyp',
+    ],
     serverMinification: true,
     // Optimize package imports
     optimizePackageImports: [
-      '@elastic/elasticsearch',
-      'postgres',
       'redis',
       'bullmq',
       'lodash',
@@ -329,26 +351,12 @@ const nextConfig = {
       '@headlessui/react',
       '@heroicons/react',
     ],
-    // ISR optimizations
-    isrMemoryCacheSize: 100, // MB
     workerThreads: true,
     cpus: 8,
-    // Partial pre-rendering for dynamic content
-    ppr: true,
-    // React 18 features
-    newNextLinkBehavior: true,
     scrollRestoration: true,
-    // Edge runtime for API routes
-    middlewareSourceMaps: true,
-    // Incremental cache handler
-    incrementalCacheHandlerPath: './cache-handler.js',
     // Module resolution optimizations
     externalDir: true,
     esmExternals: true,
-    // Font optimization
-    fontLoaders: [
-      { loader: '@next/font/google', options: { subsets: ['latin'] } },
-    ],
   },
 
   // Production browser source maps disabled for performance
@@ -360,8 +368,6 @@ const nextConfig = {
     removeConsole: process.env.NODE_ENV === 'production' ? {
       exclude: ['error', 'warn'],
     } : false,
-    // React production profiling
-    reactProductionProfiling: false,
     // Styled components optimizations
     styledComponents: true,
   },
@@ -378,9 +384,6 @@ const nextConfig = {
       transform: '@heroicons/react/24/solid/{{member}}',
     },
   },
-
-  // Telemetry disabled for privacy
-  telemetry: false,
 };
 
 module.exports = nextConfig;

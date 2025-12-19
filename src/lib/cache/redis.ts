@@ -376,11 +376,4 @@ export async function closeRedis(): Promise<void> {
   }
 }
 
-export {
-  redisClient,
-  getCacheStats,
-  resetCacheStats,
-  deleteCacheByTag,
-  deleteCacheByTags,
-};
 export default redisClient;
