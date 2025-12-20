@@ -29,9 +29,9 @@ export class LinkInjector {
   private integrationMap: IntegrationMap | null = null;
   private targetDomain: string = 'https://hampsteadrenovations.co.uk';
   private isInitialized: boolean = false;
-  private mapPath: string;
+  private mapPath: string | undefined;
 
-  constructor(mapPath: string = path.join(process.cwd(), 'ledger_integration_map.json')) {
+  constructor(mapPath?: string) {
     this.mapPath = mapPath;
     // Don't load during construction to avoid build-time errors
   }
@@ -43,13 +43,16 @@ export class LinkInjector {
     if (this.isInitialized) return;
 
     try {
-      if (fs.existsSync(this.mapPath)) {
-        const rawData = fs.readFileSync(this.mapPath, 'utf-8');
+      // Resolve path lazily
+      const resolvedPath = this.mapPath || path.join(process.cwd(), 'ledger_integration_map.json');
+      
+      if (fs.existsSync(resolvedPath)) {
+        const rawData = fs.readFileSync(resolvedPath, 'utf-8');
         this.integrationMap = JSON.parse(rawData);
         this.targetDomain = this.integrationMap?.meta?.target_domain || this.targetDomain;
         this.isInitialized = true;
       } else {
-        console.warn(`Integration map not found at ${this.mapPath}. LinkInjector will operate in pass-through mode.`);
+        console.warn(`Integration map not found at ${resolvedPath}. LinkInjector will operate in pass-through mode.`);
         this.isInitialized = true; // Mark as initialized to avoid retrying
       }
     } catch (error) {
