@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build:*)",
+      "Bash(npm test:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npm install:*)",
+      "Bash(findstr:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfix: resolve all build errors and configuration issues\n\n- Fix next.config.js experimental options \\(ppr, serverActions, deprecated options\\)\n- Remove deprecated webpack terser configuration\n- Add webpack IgnorePlugin for missing WASM modules\n- Configure client bundle to exclude server-only packages \\(TensorFlow, node-pre-gyp\\)\n- Install missing dependencies: next-auth, bcryptjs, tailwindcss plugins\n- Fix duplicate getCacheStats export in redis.ts\n- Create NewsCard component index file\n- Add Prisma compatibility stub \\(project uses postgres\\)\n- Update ESLint config to include TypeScript plugin\n\nAll build errors resolved. Build now completes successfully with only minor linting warnings.\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git push)",
+      "Bash(git commit:*)"
+    ]
+  }
+}

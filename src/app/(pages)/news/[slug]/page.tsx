@@ -70,8 +70,8 @@ export async function generateMetadata({
       title: article.title,
       description: article.excerpt || article.title,
       type: 'article',
-      publishedTime: article.publishedAt,
-      modifiedTime: article.updatedAt,
+      publishedTime: article.publishedAt?.toISOString(),
+      modifiedTime: article.updatedAt?.toISOString(),
       ...(article.featuredImageUrl && {
         images: [
           {
@@ -120,16 +120,16 @@ export default async function NewsArticlePage({
       })
     : '';
 
-  const getArticleTypeVariant = (type: string): 'primary' | 'success' | 'warning' | 'info' => {
+  const getArticleTypeVariant = (type: string): 'default' | 'success' | 'warning' | 'info' => {
     switch (type) {
       case 'news':
-        return 'primary';
+        return 'default';
       case 'analysis':
         return 'info';
       case 'guide':
         return 'success';
       default:
-        return 'primary';
+        return 'default';
     }
   };
 
@@ -164,7 +164,7 @@ export default async function NewsArticlePage({
               {formattedDate && (
                 <>
                   <span>•</span>
-                  <time dateTime={article.publishedAt}>{formattedDate}</time>
+                  <time dateTime={article.publishedAt?.toISOString()}>{formattedDate}</time>
                 </>
               )}
               {article.viewCount > 0 && (

@@ -12,7 +12,9 @@ import { formatPrice, formatPercentage } from '@/lib/utils/format';
 import { SchemaMarkup, generateAreaSchema } from '@/lib/seo/schema';
 import { ISRConfig } from '@/lib/isr/config';
 import { getAllAreaSlugs } from '@/lib/isr/utils';
-import type { AreaStats, Area, Property, School, Street, PlanningApplication } from '@/types/area';
+import type { AreaStats, Area, School, Street } from '@/types/area';
+import type { Property } from '@/types/property';
+import type { PlanningApplication } from '@/types/planning';
 
 interface AreaDetailResponse {
   area: Area;
