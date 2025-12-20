@@ -39,6 +39,7 @@ Transform how North West London residents access and understand their local area
 - **Trust Building**: Establish domain authority through valuable community content
 - **Strategic Integration**: Seamless connection to professional renovation services
 - **SEO Powerhouse**: Thousands of programmatically generated, valuable pages
+- **Technical Spec**: See [AUTHORITY_BRIDGE_SPECIFICATION.md](AUTHORITY_BRIDGE_SPECIFICATION.md) and [ledger_integration_map.json](ledger_integration_map.json) for implementation details.
 
 ## Quick Start Guide
 

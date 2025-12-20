@@ -26,18 +26,32 @@ export interface IntegrationMap {
 }
 
 export class LinkInjector {
-  private integrationMap: IntegrationMap;
-  private targetDomain: string;
+  private integrationMap: IntegrationMap | null = null;
+  private targetDomain: string = 'https://hampsteadrenovations.co.uk';
+  private isInitialized: boolean = false;
 
   constructor(mapPath: string = path.join(process.cwd(), 'ledger_integration_map.json')) {
     try {
-      const rawData = fs.readFileSync(mapPath, 'utf-8');
-      this.integrationMap = JSON.parse(rawData);
-      this.targetDomain = this.integrationMap.meta.target_domain;
+      if (fs.existsSync(mapPath)) {
+        const rawData = fs.readFileSync(mapPath, 'utf-8');
+        this.integrationMap = JSON.parse(rawData);
+        this.targetDomain = this.integrationMap?.meta?.target_domain || this.targetDomain;
+        this.isInitialized = true;
+      } else {
+        console.warn(`Integration map not found at ${mapPath}. LinkInjector will operate in pass-through mode.`);
+      }
     } catch (error) {
       console.error('Failed to load integration map:', error);
-      throw new Error('Integration map could not be loaded');
+      // Graceful degradation: operate without link injection rather than crashing
+      console.warn('LinkInjector will operate in pass-through mode.');
     }
+  }
+
+  /**
+   * Check if the injector is properly initialized
+   */
+  public isReady(): boolean {
+    return this.isInitialized && this.integrationMap !== null;
   }
 
   /**
@@ -45,6 +59,11 @@ export class LinkInjector {
    * Implements Strategy B: The "Contextual Mention"
    */
   public injectContextualLinks(content: string, location: string = 'North West London'): string {
+    // Graceful degradation: return content unchanged if not initialized
+    if (!this.isReady() || !this.integrationMap) {
+      return content;
+    }
+
     let processedContent = content;
     const mappings = this.integrationMap.service_mapping;
 
@@ -82,7 +101,12 @@ export class LinkInjector {
    * Generates a "Featured Expert" block HTML.
    * Implements Strategy A: The "Featured Expert" Block
    */
-  public generateFeaturedExpertBlock(serviceKey: string, location: string = 'NW3'): string {
+  public generateFeaturedExpertBlock(serviceKey: string = 'house-extensions', location: string = 'NW3'): string {
+    // Graceful degradation: return empty string if not initialized
+    if (!this.isReady() || !this.integrationMap) {
+      return '';
+    }
+
     const service = this.integrationMap.service_mapping[serviceKey];
     if (!service) {
       return '';
@@ -108,7 +132,16 @@ export class LinkInjector {
    * Implements Strategy C: The "Hyper-Local Street Link"
    */
   public generateStreetLink(streetName: string, postcode: string, serviceKey: string = 'house-extensions'): string {
+    // Graceful degradation: return empty string if not initialized
+    if (!this.isReady() || !this.integrationMap) {
+      return '';
+    }
+
     const rule = this.integrationMap.dynamic_linking_rules.street_level;
+    if (!rule) {
+      return '';
+    }
+
     const serviceSlug = this.integrationMap.service_mapping[serviceKey]?.target_slug || 'house-extensions';
     
     const streetSlug = streetName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -130,3 +163,6 @@ export class LinkInjector {
     `;
   }
 }
+
+// Export singleton instance for use across the application
+export const linkInjector = new LinkInjector();
