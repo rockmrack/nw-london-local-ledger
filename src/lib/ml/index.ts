@@ -217,8 +217,8 @@ export function exportMLMetrics(format: 'prometheus' | 'json' = 'json'): string 
   return mlMetricsDashboard.exportMetrics(format);
 }
 
-// Default initialization
-if (typeof window === 'undefined') {
+// Default initialization - skip during build
+if (typeof window === 'undefined' && process.env.NODE_ENV === 'production' && !process.env.SKIP_ML_BUILD) {
   // Server-side initialization
   initializeMLSystem({
     enablePredictiveCache: true,
