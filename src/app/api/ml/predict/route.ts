@@ -7,6 +7,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { predictiveCacheManager } from '@/lib/ml';
 import { z } from 'zod';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 // Request validation schema
 const PredictionRequestSchema = z.object({
   sessionId: z.string(),
