@@ -1,0 +1,13 @@
+{
+  "buildCommand": "next build",
+  "framework": "nextjs",
+  "regions": ["lhr1"],
+  "env": {
+    "NEXT_TELEMETRY_DISABLED": "1"
+  },
+  "build": {
+    "env": {
+      "SKIP_ML_BUILD": "true"
+    }
+  }
+}

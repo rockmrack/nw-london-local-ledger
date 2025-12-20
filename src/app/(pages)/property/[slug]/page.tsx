@@ -12,7 +12,8 @@ import { formatPrice, formatDate, formatArea } from '@/lib/utils/format';
 import { SchemaMarkup, generatePropertySchema } from '@/lib/seo/schema';
 import { ISRConfig } from '@/lib/isr/config';
 import { getTopPropertySlugs } from '@/lib/isr/utils';
-import type { PropertyWithSales, Property, PlanningApplication } from '@/types/property';
+import type { PropertyWithSales, Property } from '@/types/property';
+import type { PlanningApplication } from '@/types/planning';
 
 interface PropertyDetailResponse {
   property: PropertyWithSales;

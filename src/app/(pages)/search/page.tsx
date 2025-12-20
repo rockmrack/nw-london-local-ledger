@@ -69,10 +69,10 @@ export async function generateMetadata({
   };
 }
 
-function getTypeColor(type: string): 'primary' | 'success' | 'warning' | 'info' {
+function getTypeColor(type: string): 'default' | 'success' | 'warning' | 'info' {
   switch (type) {
     case 'property':
-      return 'primary';
+      return 'default';
     case 'planning':
       return 'warning';
     case 'area':
@@ -80,7 +80,7 @@ function getTypeColor(type: string): 'primary' | 'success' | 'warning' | 'info' 
     case 'news':
       return 'info';
     default:
-      return 'primary';
+      return 'default';
   }
 }
 
