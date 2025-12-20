@@ -47,7 +47,7 @@ describe('AIContentService', () => {
 
   describe('Content Validation', () => {
     test('should validate good content as valid', () => {
-      const content = 'This is a perfectly fine piece of content that is long enough to pass validation checks.';
+      const content = 'This is a perfectly fine piece of content that is long enough to pass validation checks and contains no problematic patterns.';
       const result = service.validateContent(content);
       
       expect(result.valid).toBe(true);

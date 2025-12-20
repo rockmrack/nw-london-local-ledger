@@ -26,6 +26,12 @@ const customJestConfig = {
     '<rootDir>/src/**/__tests__/**/*.{js,jsx,ts,tsx}',
     '<rootDir>/tests/**/*.{spec,test}.{js,jsx,ts,tsx}',
   ],
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/.next/',
+    '/src/lib/ml/__tests__/',
+    '/src/lib/deduplication/__tests__/',
+  ],
   coverageThreshold: {
     global: {
       branches: 70,

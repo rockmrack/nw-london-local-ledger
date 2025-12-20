@@ -29,21 +29,37 @@ export class LinkInjector {
   private integrationMap: IntegrationMap | null = null;
   private targetDomain: string = 'https://hampsteadrenovations.co.uk';
   private isInitialized: boolean = false;
+  private mapPath: string | undefined;
 
-  constructor(mapPath: string = path.join(process.cwd(), 'ledger_integration_map.json')) {
+  constructor(mapPath?: string) {
+    this.mapPath = mapPath;
+    // Don't load during construction to avoid build-time errors
+  }
+
+  /**
+   * Lazy load the integration map
+   */
+  private loadMap(): void {
+    if (this.isInitialized) return;
+
     try {
-      if (fs.existsSync(mapPath)) {
-        const rawData = fs.readFileSync(mapPath, 'utf-8');
+      // Resolve path lazily
+      const resolvedPath = this.mapPath || path.join(process.cwd(), 'ledger_integration_map.json');
+      
+      if (fs.existsSync(resolvedPath)) {
+        const rawData = fs.readFileSync(resolvedPath, 'utf-8');
         this.integrationMap = JSON.parse(rawData);
         this.targetDomain = this.integrationMap?.meta?.target_domain || this.targetDomain;
         this.isInitialized = true;
       } else {
-        console.warn(`Integration map not found at ${mapPath}. LinkInjector will operate in pass-through mode.`);
+        console.warn(`Integration map not found at ${resolvedPath}. LinkInjector will operate in pass-through mode.`);
+        this.isInitialized = true; // Mark as initialized to avoid retrying
       }
     } catch (error) {
       console.error('Failed to load integration map:', error);
       // Graceful degradation: operate without link injection rather than crashing
       console.warn('LinkInjector will operate in pass-through mode.');
+      this.isInitialized = true; // Mark as initialized to avoid retrying
     }
   }
 
@@ -51,6 +67,7 @@ export class LinkInjector {
    * Check if the injector is properly initialized
    */
   public isReady(): boolean {
+    this.loadMap(); // Ensure map is loaded
     return this.isInitialized && this.integrationMap !== null;
   }
 
@@ -59,8 +76,10 @@ export class LinkInjector {
    * Implements Strategy B: The "Contextual Mention"
    */
   public injectContextualLinks(content: string, location: string = 'North West London'): string {
+    this.loadMap(); // Ensure map is loaded
+    
     // Graceful degradation: return content unchanged if not initialized
-    if (!this.isReady() || !this.integrationMap) {
+    if (!this.integrationMap) {
       return content;
     }
 
@@ -102,8 +121,10 @@ export class LinkInjector {
    * Implements Strategy A: The "Featured Expert" Block
    */
   public generateFeaturedExpertBlock(serviceKey: string = 'house-extensions', location: string = 'NW3'): string {
+    this.loadMap(); // Ensure map is loaded
+    
     // Graceful degradation: return empty string if not initialized
-    if (!this.isReady() || !this.integrationMap) {
+    if (!this.integrationMap) {
       return '';
     }
 
@@ -132,8 +153,10 @@ export class LinkInjector {
    * Implements Strategy C: The "Hyper-Local Street Link"
    */
   public generateStreetLink(streetName: string, postcode: string, serviceKey: string = 'house-extensions'): string {
+    this.loadMap(); // Ensure map is loaded
+    
     // Graceful degradation: return empty string if not initialized
-    if (!this.isReady() || !this.integrationMap) {
+    if (!this.integrationMap) {
       return '';
     }
 

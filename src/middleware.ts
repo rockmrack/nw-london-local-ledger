@@ -5,7 +5,6 @@
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { monitoringService } from '@/lib/monitoring/monitoring-service';
 import { LRUCache } from 'lru-cache';
 
 // Rate limiter configuration
@@ -48,25 +47,8 @@ export function middleware(request: NextRequest) {
     rateLimit.set(ip, currentUsage + 1);
   }
 
-  // Start monitoring operation if not a static asset
-  let requestId = '';
-  if (!path.startsWith('/_next/static/') && !path.startsWith('/static/')) {
-    requestId = monitoringService.startOperation(`middleware.${method}.${path}`, {
-      method,
-      path,
-      url: request.url,
-      headers: Object.fromEntries(request.headers.entries()),
-      query: Object.fromEntries(request.nextUrl.searchParams.entries())
-    });
-  }
-
   // Get the response
   const response = NextResponse.next();
-
-  // Add request ID to headers for tracing
-  if (requestId) {
-    response.headers.set('X-Request-Id', requestId);
-  }
 
   // Add security headers
   response.headers.set('X-Content-Type-Options', 'nosniff');
@@ -99,28 +81,6 @@ export function middleware(request: NextRequest) {
       'Cache-Control',
       'public, max-age=31536000, immutable'
     );
-  }
-
-  // End monitoring operation and record metrics
-  if (requestId) {
-    const totalDuration = Date.now() - startTime;
-
-    // Record API request metrics for API routes
-    if (path.startsWith('/api/')) {
-      monitoringService.recordApiRequest(
-        method,
-        path,
-        200, // Middleware doesn't have access to final status code
-        totalDuration,
-        { requestId }
-      );
-    }
-
-    // End the monitoring operation
-    monitoringService.endOperation(requestId, {
-      duration: totalDuration,
-      type: 'middleware'
-    });
   }
 
   return response;
