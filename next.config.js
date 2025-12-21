@@ -361,9 +361,8 @@ const nextConfig = {
       'redis',
     ],
     serverMinification: true,
-    // Optimize package imports
+    // Optimize package imports (redis excluded - it's in serverComponentsExternalPackages)
     optimizePackageImports: [
-      'redis',
       'bullmq',
       'lodash',
       'date-fns',
