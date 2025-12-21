@@ -7,6 +7,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { searchService } from '@/lib/search/elasticsearch';
 import { validatePaginationParams } from '@/lib/utils/validation';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
