@@ -4,17 +4,20 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { newsService } from '@/services/news/NewsService';
-import { getCache, setCache } from '@/lib/cache/redis';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { slug: string } }
 ) {
   try {
+    // Dynamic imports to prevent build-time analysis
+    const { newsService } = await import('@/services/news/NewsService');
+    const { getCache, setCache } = await import('@/lib/cache/redis');
+    
     const { slug } = params;
     const cacheKey = `news:detail:${slug}`;
 
