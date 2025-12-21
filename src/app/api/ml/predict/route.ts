@@ -12,8 +12,14 @@ export const runtime = 'nodejs';
 
 // Lazy load ML modules to prevent TensorFlow import during build
 async function getMLModules() {
-  const { predictiveCacheManager, inferenceEngine } = await import('@/lib/ml');
-  return { predictiveCacheManager, inferenceEngine };
+  const [pcm, ie] = await Promise.all([
+    import('@/lib/ml/predictive-cache-manager'),
+    import('@/lib/ml/inference/inference-engine'),
+  ]);
+  return {
+    predictiveCacheManager: pcm.predictiveCacheManager,
+    inferenceEngine: ie.inferenceEngine
+  };
 }
 
 // Request validation schema

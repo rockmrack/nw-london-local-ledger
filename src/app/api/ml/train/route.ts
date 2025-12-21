@@ -12,7 +12,7 @@ export const runtime = 'nodejs';
 
 // Lazy load ML modules to prevent TensorFlow import during build
 async function getTrainingPipeline() {
-  const { trainingPipeline } = await import('@/lib/ml');
+  const { trainingPipeline } = await import('@/lib/ml/training/training-pipeline');
   return trainingPipeline;
 }
 
