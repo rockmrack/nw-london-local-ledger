@@ -1,25 +1,12 @@
 /**
  * Redis client configuration for caching with enhanced features
+ *
+ * IMPORTANT: Redis client is created lazily to prevent build-time import issues
  */
 
-import { createClient } from 'redis';
 import crypto from 'crypto';
 
 const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
-
-// Create Redis client
-const redisClient = createClient({
-  url: redisUrl,
-  socket: {
-    reconnectStrategy: (retries) => {
-      if (retries > 10) {
-        console.error('Too many Redis reconnection attempts');
-        return new Error('Too many retries');
-      }
-      return Math.min(retries * 100, 3000);
-    },
-  },
-});
 
 // Cache statistics for monitoring
 const cacheStats = {
@@ -36,6 +23,41 @@ const stampedeProtection = new Map<string, Promise<any>>();
 // Tag tracking prefix
 const TAG_PREFIX = 'tag:';
 const TAGS_KEY_PREFIX = 'tags:';
+
+// Lazy-loaded Redis client
+let redisClient: any = null;
+let isConnected = false;
+
+// Function to get or create Redis client
+async function getClient() {
+  if (!redisClient) {
+    // Dynamically import redis to prevent build-time loading
+    const { createClient } = await import('redis');
+
+    redisClient = createClient({
+      url: redisUrl,
+      socket: {
+        reconnectStrategy: (retries) => {
+          if (retries > 10) {
+            console.error('Too many Redis reconnection attempts');
+            return new Error('Too many retries');
+          }
+          return Math.min(retries * 100, 3000);
+        },
+      },
+    });
+
+    // Error handling
+    redisClient.on('error', (err: any) => {
+      console.error('Redis Client Error:', err);
+    });
+
+    redisClient.on('connect', () => {
+      console.log('✅ Redis connected');
+    });
+  }
+  return redisClient;
+}
 
 export function getCacheStats() {
   const total = cacheStats.hits + cacheStats.misses;
@@ -54,21 +76,10 @@ export function resetCacheStats() {
   cacheStats.errors = 0;
 }
 
-// Error handling
-redisClient.on('error', (err) => {
-  console.error('Redis Client Error:', err);
-});
-
-redisClient.on('connect', () => {
-  console.log('✅ Redis connected');
-});
-
-// Connect to Redis
-let isConnected = false;
-
 export async function connectRedis(): Promise<void> {
   if (!isConnected) {
-    await redisClient.connect();
+    const client = await getClient();
+    await client.connect();
     isConnected = true;
   }
 }
@@ -85,7 +96,8 @@ export async function getCache<T>(
   }
 ): Promise<T | null> {
   try {
-    const value = await redisClient.get(key);
+    const client = await getClient();
+    const value = await client.get(key);
 
     if (value) {
       cacheStats.hits++;
@@ -135,10 +147,11 @@ export async function setCache<T>(
   tags?: string[]
 ): Promise<void> {
   try {
+    const client = await getClient();
     const serialized = JSON.stringify(value);
 
     // Use transaction for atomic operations
-    const multi = redisClient.multi();
+    const multi = client.multi();
 
     // Set the main value
     if (ttlSeconds) {
@@ -174,10 +187,11 @@ export async function setCache<T>(
  */
 export async function deleteCache(key: string): Promise<void> {
   try {
+    const client = await getClient();
     // Get tags for this key
-    const tags = await redisClient.sMembers(`${TAGS_KEY_PREFIX}${key}`);
+    const tags = await client.sMembers(`${TAGS_KEY_PREFIX}${key}`);
 
-    const multi = redisClient.multi();
+    const multi = client.multi();
 
     // Delete the key
     multi.del(key);
@@ -205,8 +219,9 @@ export async function deleteCache(key: string): Promise<void> {
  */
 export async function deleteCacheByTag(tag: string): Promise<number> {
   try {
+    const client = await getClient();
     // Get all keys with this tag
-    const keys = await redisClient.sMembers(`${TAG_PREFIX}${tag}`);
+    const keys = await client.sMembers(`${TAG_PREFIX}${tag}`);
 
     if (keys.length === 0) return 0;
 
@@ -216,7 +231,8 @@ export async function deleteCacheByTag(tag: string): Promise<number> {
     }
 
     // Clean up the tag set
-    await redisClient.del(`${TAG_PREFIX}${tag}`);
+    const client = await getClient();
+    await client.del(`${TAG_PREFIX}${tag}`);
 
     return keys.length;
   } catch (error) {
@@ -242,9 +258,10 @@ export async function deleteCacheByTags(tags: string[]): Promise<number> {
  */
 export async function deleteCacheByPattern(pattern: string): Promise<void> {
   try {
-    const keys = await redisClient.keys(pattern);
+    const client = await getClient();
+    const keys = await client.keys(pattern);
     if (keys.length > 0) {
-      await redisClient.del(keys);
+      await client.del(keys);
     }
   } catch (error) {
     console.error(`Error deleting cache by pattern ${pattern}:`, error);
@@ -256,7 +273,8 @@ export async function deleteCacheByPattern(pattern: string): Promise<void> {
  */
 export async function existsInCache(key: string): Promise<boolean> {
   try {
-    const exists = await redisClient.exists(key);
+    const client = await getClient();
+    const exists = await client.exists(key);
     return exists === 1;
   } catch (error) {
     console.error(`Error checking cache existence for key ${key}:`, error);
@@ -269,7 +287,8 @@ export async function existsInCache(key: string): Promise<boolean> {
  */
 export async function incrementCache(key: string): Promise<number> {
   try {
-    return await redisClient.incr(key);
+    const client = await getClient();
+    return await client.incr(key);
   } catch (error) {
     console.error(`Error incrementing cache for key ${key}:`, error);
     return 0;
@@ -283,7 +302,8 @@ export async function batchGetCache<T>(keys: string[]): Promise<Map<string, T | 
   try {
     if (keys.length === 0) return new Map();
 
-    const pipeline = redisClient.multi();
+    const client = await getClient();
+    const pipeline = client.multi();
     keys.forEach(key => pipeline.get(key));
 
     const results = await pipeline.exec();
@@ -315,7 +335,8 @@ export async function batchSetCache<T>(
   try {
     if (entries.length === 0) return;
 
-    const pipeline = redisClient.multi();
+    const client = await getClient();
+    const pipeline = client.multi();
 
     for (const { key, value, ttlSeconds, tags } of entries) {
       const serialized = JSON.stringify(value);
@@ -354,11 +375,12 @@ export async function batchDeleteCache(keys: string[]): Promise<void> {
   try {
     if (keys.length === 0) return;
 
+    const client = await getClient();
     // Process in chunks of 1000 to avoid overwhelming Redis
     const chunkSize = 1000;
     for (let i = 0; i < keys.length; i += chunkSize) {
       const chunk = keys.slice(i, i + chunkSize);
-      await redisClient.del(chunk);
+      await client.del(chunk);
     }
   } catch (error) {
     console.error('Error batch deleting cache:', error);
@@ -369,11 +391,16 @@ export async function batchDeleteCache(keys: string[]): Promise<void> {
  * Close Redis connection
  */
 export async function closeRedis(): Promise<void> {
-  if (isConnected) {
+  if (isConnected && redisClient) {
     await redisClient.quit();
     isConnected = false;
     console.log('Redis connection closed');
   }
 }
 
-export default redisClient;
+// Export a getter function instead of the client directly
+export async function getRedisClient() {
+  return await getClient();
+}
+
+export default getClient;
