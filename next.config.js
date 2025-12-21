@@ -246,6 +246,9 @@ const nextConfig = {
         'mock-aws-s3': false,
         'aws-sdk': false,
         'nock': false,
+        'redis': false,
+        'pg': false,
+        'pg-native': false,
       };
     } else {
       // Server-side: Handle missing WASM modules gracefully
