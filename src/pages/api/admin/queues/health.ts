@@ -4,8 +4,12 @@
  */
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import { healthCheck } from '@/lib/queues/workers';
 import { logger } from '@/lib/logging/logger';
+
+// Specify Node.js runtime (required for worker_threads and BullMQ)
+export const config = {
+  runtime: 'nodejs',
+};
 
 export default async function handler(
   req: NextApiRequest,
@@ -17,6 +21,8 @@ export default async function handler(
   }
 
   try {
+    // Dynamic import to prevent build-time analysis of worker code
+    const { healthCheck } = await import('@/lib/queues/workers');
     const health = await healthCheck();
 
     const statusCode = health.healthy ? 200 : 503;

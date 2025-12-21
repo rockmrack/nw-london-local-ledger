@@ -246,6 +246,9 @@ const nextConfig = {
         'mock-aws-s3': false,
         'aws-sdk': false,
         'nock': false,
+        'redis': false,
+        'pg': false,
+        'pg-native': false,
       };
     } else {
       // Server-side: Handle missing WASM modules gracefully
@@ -355,11 +358,11 @@ const nextConfig = {
       'pg',
       '@tensorflow/tfjs-node',
       '@mapbox/node-pre-gyp',
+      'redis',
     ],
     serverMinification: true,
-    // Optimize package imports
+    // Optimize package imports (redis excluded - it's in serverComponentsExternalPackages)
     optimizePackageImports: [
-      'redis',
       'bullmq',
       'lodash',
       'date-fns',

@@ -4,12 +4,23 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { predictiveCacheManager } from '@/lib/ml';
 import { z } from 'zod';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+
+// Lazy load ML modules to prevent TensorFlow import during build
+async function getMLModules() {
+  const [pcm, ie] = await Promise.all([
+    import('@/lib/ml/predictive-cache-manager'),
+    import('@/lib/ml/inference/inference-engine'),
+  ]);
+  return {
+    predictiveCacheManager: pcm.predictiveCacheManager,
+    inferenceEngine: ie.inferenceEngine
+  };
+}
 
 // Request validation schema
 const PredictionRequestSchema = z.object({
@@ -38,6 +49,9 @@ export async function POST(request: NextRequest) {
 
     const startTime = Date.now();
 
+    // Get ML modules
+    const { predictiveCacheManager, inferenceEngine } = await getMLModules();
+
     // Get predictions based on edge inference preference
     let predictions;
 
@@ -49,8 +63,6 @@ export async function POST(request: NextRequest) {
       );
     } else {
       // Use local inference
-      const inferenceEngine = (await import('@/lib/ml')).inferenceEngine;
-
       predictions = await inferenceEngine.predict({
         type: validatedRequest.type,
         context: validatedRequest.context,

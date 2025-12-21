@@ -1,0 +1,44 @@
+[
+  {
+    "memory": {
+      "total": 68305674240,
+      "free": 30144446464,
+      "used": 38161227776,
+      "usedPercent": 55.86831284603977
+    },
+    "cpu": {
+      "cores": 22,
+      "usagePercent": 13,
+      "loadAvg": [
+        0,
+        0,
+        0
+      ]
+    },
+    "uptime": 63.5624746,
+    "platform": "win32",
+    "nodeVersion": "v24.11.1",
+    "timestamp": 1766277385113
+  },
+  {
+    "memory": {
+      "total": 68305674240,
+      "free": 30439047168,
+      "used": 37866627072,
+      "usedPercent": 55.437015289463595
+    },
+    "cpu": {
+      "cores": 22,
+      "usagePercent": 13,
+      "loadAvg": [
+        0,
+        0,
+        0
+      ]
+    },
+    "uptime": 73.5574859,
+    "platform": "win32",
+    "nodeVersion": "v24.11.1",
+    "timestamp": 1766277395108
+  }
+]

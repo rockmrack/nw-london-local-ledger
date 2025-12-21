@@ -7,6 +7,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { newsService } from '@/services/news/NewsService';
 import { getCache, setCache } from '@/lib/cache/redis';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { slug: string } }

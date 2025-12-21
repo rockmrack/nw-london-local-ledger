@@ -8,6 +8,9 @@ import { newsService } from '@/services/news/NewsService';
 import { getCache, setCache } from '@/lib/cache/redis';
 import { validatePaginationParams } from '@/lib/utils/validation';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
