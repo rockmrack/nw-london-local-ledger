@@ -4,12 +4,17 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { trainingPipeline } from '@/lib/ml';
 import { z } from 'zod';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+
+// Lazy load ML modules to prevent TensorFlow import during build
+async function getTrainingPipeline() {
+  const { trainingPipeline } = await import('@/lib/ml');
+  return trainingPipeline;
+}
 
 // Request validation schema
 const TrainingRequestSchema = z.object({
@@ -40,6 +45,9 @@ export async function POST(request: NextRequest) {
     const validatedRequest = TrainingRequestSchema.parse(body);
 
     console.log('Starting model training:', validatedRequest);
+
+    // Get training pipeline instance
+    const trainingPipeline = await getTrainingPipeline();
 
     // Start training based on schedule
     if (validatedRequest.schedule && validatedRequest.schedule !== 'once') {

@@ -4,11 +4,16 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { mlMetricsDashboard, predictiveCacheManager, inferenceEngine } from '@/lib/ml';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+
+// Lazy load ML modules to prevent TensorFlow import during build
+async function getMLModules() {
+  const { mlMetricsDashboard, predictiveCacheManager, inferenceEngine } = await import('@/lib/ml');
+  return { mlMetricsDashboard, predictiveCacheManager, inferenceEngine };
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,8 +21,16 @@ export async function GET(request: NextRequest) {
     const format = searchParams.get('format') as 'json' | 'prometheus' | null;
     const duration = searchParams.get('duration');
 
+    // Get ML modules
+    const { mlMetricsDashboard, predictiveCacheManager, inferenceEngine } = await getMLModules();
+
     // Get comprehensive metrics
-    const metrics = await getComprehensiveMetrics(duration ? parseInt(duration) : undefined);
+    const metrics = await getComprehensiveMetrics(
+      duration ? parseInt(duration) : undefined,
+      mlMetricsDashboard,
+      predictiveCacheManager,
+      inferenceEngine
+    );
 
     // Format based on request
     if (format === 'prometheus') {
@@ -52,7 +65,12 @@ export async function GET(request: NextRequest) {
 /**
  * Get comprehensive ML metrics
  */
-async function getComprehensiveMetrics(duration?: number): Promise<any> {
+async function getComprehensiveMetrics(
+  duration?: number,
+  mlMetricsDashboard?: any,
+  predictiveCacheManager?: any,
+  inferenceEngine?: any
+): Promise<any> {
   // Get dashboard summary
   const dashboardSummary = mlMetricsDashboard.getMetricsSummary();
 

@@ -217,14 +217,5 @@ export function exportMLMetrics(format: 'prometheus' | 'json' = 'json'): string 
   return mlMetricsDashboard.exportMetrics(format);
 }
 
-// Default initialization - skip during build
-if (typeof window === 'undefined' && process.env.NODE_ENV === 'production' && !process.env.SKIP_ML_BUILD) {
-  // Server-side initialization
-  initializeMLSystem({
-    enablePredictiveCache: true,
-    enableEdgeInference: false,
-    enableAutoTraining: false,
-  }).catch(error => {
-    console.error('Failed to initialize ML system:', error);
-  });
-}
+// Skip auto-initialization to prevent TensorFlow loading during build
+// ML routes will initialize when first called
