@@ -355,6 +355,7 @@ const nextConfig = {
       'pg',
       '@tensorflow/tfjs-node',
       '@mapbox/node-pre-gyp',
+      'redis',
     ],
     serverMinification: true,
     // Optimize package imports
