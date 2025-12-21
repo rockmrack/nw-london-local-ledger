@@ -20,8 +20,28 @@ const options: postgres.Options<{}> = {
   onnotice: () => {}, // Suppress notices for cleaner logs
 };
 
-// Create database connection
-export const sql = postgres(connectionString, options);
+// Lazy database connection
+let _sql: postgres.Sql<{}> | null = null;
+
+function getClient(): postgres.Sql<{}> {
+  if (!_sql) {
+    _sql = postgres(connectionString, options);
+  }
+  return _sql;
+}
+
+// Create database connection proxy for lazy initialization
+export const sql = new Proxy({} as postgres.Sql<{}>, {
+  get(target, prop) {
+    const client = getClient();
+    const value = (client as any)[prop];
+    return typeof value === 'function' ? value.bind(client) : value;
+  },
+  apply(target, thisArg, args) {
+    const client = getClient();
+    return (client as any)(...args);
+  }
+});
 
 // Type-safe query helper
 export type SQL = typeof sql;

@@ -231,7 +231,6 @@ export async function deleteCacheByTag(tag: string): Promise<number> {
     }
 
     // Clean up the tag set
-    const client = await getClient();
     await client.del(`${TAG_PREFIX}${tag}`);
 
     return keys.length;

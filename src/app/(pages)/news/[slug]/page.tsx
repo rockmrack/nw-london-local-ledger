@@ -9,7 +9,6 @@ import { Badge } from '@/components/ui/Badge';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { SchemaMarkup, generateArticleSchema } from '@/lib/seo/schema';
 import { ISRConfig } from '@/lib/isr/config';
-import { getNewsArticleSlugs } from '@/lib/isr/utils';
 import type { NewsArticle, ArticleTag } from '@/types/news';
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
@@ -19,13 +18,9 @@ interface ArticleDetailResponse {
   tags: ArticleTag[];
 }
 
-// Generate static params for recent news articles at build time
-export async function generateStaticParams() {
-  const slugs = await getNewsArticleSlugs(ISRConfig.buildLimits.news as number);
-  return slugs.map((slug) => ({
-    slug,
-  }));
-}
+// Force dynamic rendering to prevent build-time data fetching
+export const dynamic = 'force-dynamic';
+export const revalidate = ISRConfig.revalidation.news;
 
 // Configure ISR revalidation
 export const revalidate = ISRConfig.revalidation.news; // 3 hours
