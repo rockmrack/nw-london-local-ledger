@@ -3,6 +3,8 @@
  * Reusable component displaying Hampstead Renovations contact details
  */
 
+'use client';
+
 import React from 'react';
 import { COMPANY, getVCardData } from '@/lib/constants/company';
 
