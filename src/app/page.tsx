@@ -30,6 +30,7 @@ const SearchWidget = dynamic(() => import('@/components/home/SearchWidget'), {
 });
 
 // Configure ISR for homepage
+export const dynamic = 'force-dynamic'; // Prevent build-time prerendering
 export const revalidate = ISRConfig.revalidation.homepage; // 12 hours
 export const runtime = 'nodejs'; // Ensure Node.js runtime for streaming
 
