@@ -1,30 +1,30 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import dynamic from 'next/dynamic';
+import dynamicImport from 'next/dynamic';
 import { ISRConfig } from '@/lib/isr/config';
 import { ProgressiveHydration } from '@/components/ProgressiveHydration';
 
 // Lazy load components for code splitting
-const HeroSection = dynamic(() => import('@/components/home/HeroSection'), {
+const HeroSection = dynamicImport(() => import('@/components/home/HeroSection'), {
   loading: () => <HeroSkeleton />,
 });
 
-const FeaturedProperties = dynamic(() => import('@/components/home/FeaturedProperties'), {
+const FeaturedProperties = dynamicImport(() => import('@/components/home/FeaturedProperties'), {
   loading: () => <PropertiesSkeleton />,
   ssr: true,
 });
 
-const LatestNews = dynamic(() => import('@/components/home/LatestNews'), {
+const LatestNews = dynamicImport(() => import('@/components/home/LatestNews'), {
   loading: () => <NewsSkeleton />,
   ssr: true,
 });
 
-const MarketInsights = dynamic(() => import('@/components/home/MarketInsights'), {
+const MarketInsights = dynamicImport(() => import('@/components/home/MarketInsights'), {
   loading: () => <InsightsSkeleton />,
   ssr: false, // Client-side only for non-critical content
 });
 
-const SearchWidget = dynamic(() => import('@/components/home/SearchWidget'), {
+const SearchWidget = dynamicImport(() => import('@/components/home/SearchWidget'), {
   loading: () => <SearchSkeleton />,
   ssr: true,
 });
@@ -55,26 +55,44 @@ export const metadata: Metadata = {
   },
 };
 
-// Async data fetching functions - using services directly instead of fetch
+// Async data fetching functions - gracefully handle missing services
 async function getFeaturedProperties() {
   try {
+    // Check if we're in a proper server environment
+    if (!process.env.DATABASE_URL) {
+      console.warn('Database not configured, skipping property fetch');
+      return { properties: [], total: 0 };
+    }
+
     // Dynamic import to avoid build-time evaluation
     const { propertyService } = await import('@/services/property/PropertyService');
-    const { getCache, setCache } = await import('@/lib/cache/redis');
 
-    const cacheKey = 'homepage:featured-properties';
-    const cached = await getCache(cacheKey);
-    if (cached) return cached;
+    // Try cache first (with fallback if Redis unavailable)
+    try {
+      const { getCache, setCache } = await import('@/lib/cache/redis');
+      const cacheKey = 'homepage:featured-properties';
+      const cached = await getCache(cacheKey);
+      if (cached) return cached;
 
-    const result = await propertyService.searchProperties({
-      page: 1,
-      limit: 6,
-      sortBy: 'date',
-      sortOrder: 'desc',
-    });
+      const result = await propertyService.searchProperties({
+        page: 1,
+        limit: 6,
+        sortBy: 'date',
+        sortOrder: 'desc',
+      });
 
-    await setCache(cacheKey, result, 3600); // Cache for 1 hour
-    return result;
+      await setCache(cacheKey, result, 3600).catch(() => {}); // Ignore cache errors
+      return result;
+    } catch (cacheError) {
+      // Redis unavailable, fetch without cache
+      const result = await propertyService.searchProperties({
+        page: 1,
+        limit: 6,
+        sortBy: 'date',
+        sortOrder: 'desc',
+      });
+      return result;
+    }
   } catch (error) {
     console.error('Error fetching properties:', error);
     return { properties: [], total: 0 };
@@ -83,18 +101,30 @@ async function getFeaturedProperties() {
 
 async function getLatestNews() {
   try {
+    // Check if we're in a proper server environment
+    if (!process.env.DATABASE_URL) {
+      console.warn('Database not configured, skipping news fetch');
+      return { articles: [], total: 0 };
+    }
+
     // Dynamic import to avoid build-time evaluation
     const { newsService } = await import('@/services/news/NewsService');
-    const { getCache, setCache } = await import('@/lib/cache/redis');
 
-    const cacheKey = 'homepage:latest-news';
-    const cached = await getCache(cacheKey);
-    if (cached) return cached;
+    // Try cache first (with fallback if Redis unavailable)
+    try {
+      const { getCache, setCache } = await import('@/lib/cache/redis');
+      const cacheKey = 'homepage:latest-news';
+      const cached = await getCache(cacheKey);
+      if (cached) return cached;
 
-    const result = await newsService.getPublishedArticles(1, 4);
-
-    await setCache(cacheKey, result, 1800); // Cache for 30 minutes
-    return result;
+      const result = await newsService.getPublishedArticles(1, 4);
+      await setCache(cacheKey, result, 1800).catch(() => {}); // Ignore cache errors
+      return result;
+    } catch (cacheError) {
+      // Redis unavailable, fetch without cache
+      const result = await newsService.getPublishedArticles(1, 4);
+      return result;
+    }
   } catch (error) {
     console.error('Error fetching news:', error);
     return { articles: [], total: 0 };
@@ -102,13 +132,8 @@ async function getLatestNews() {
 }
 
 async function getMarketStats() {
-  try {
-    // For now, return empty stats - this can be implemented when the ML service is ready
-    return { stats: {} };
-  } catch (error) {
-    console.error('Error fetching metrics:', error);
-    return { stats: {} };
-  }
+  // Return empty stats - ML service to be implemented
+  return { stats: {} };
 }
 
 export default async function HomePage() {
