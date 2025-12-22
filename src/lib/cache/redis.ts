@@ -31,30 +31,49 @@ let isConnected = false;
 // Function to get or create Redis client
 async function getClient() {
   if (!redisClient) {
-    // Dynamically import redis to prevent build-time loading
-    const { createClient } = await import('redis');
+    try {
+      // Check if Redis is configured
+      if (!process.env.REDIS_URL) {
+        console.warn('Redis URL not configured, cache will be disabled');
+        return null;
+      }
 
-    redisClient = createClient({
-      url: redisUrl,
-      socket: {
-        reconnectStrategy: (retries) => {
-          if (retries > 10) {
-            console.error('Too many Redis reconnection attempts');
-            return new Error('Too many retries');
-          }
-          return Math.min(retries * 100, 3000);
+      // Dynamically import redis to prevent build-time loading
+      const { createClient } = await import('redis');
+
+      redisClient = createClient({
+        url: redisUrl,
+        socket: {
+          reconnectStrategy: (retries) => {
+            if (retries > 10) {
+              console.error('Too many Redis reconnection attempts');
+              return new Error('Too many retries');
+            }
+            return Math.min(retries * 100, 3000);
+          },
         },
-      },
-    });
+      });
 
-    // Error handling
-    redisClient.on('error', (err: any) => {
-      console.error('Redis Client Error:', err);
-    });
+      // Error handling
+      redisClient.on('error', (err: any) => {
+        console.error('Redis Client Error:', err);
+        isConnected = false;
+      });
 
-    redisClient.on('connect', () => {
-      console.log('✅ Redis connected');
-    });
+      redisClient.on('connect', () => {
+        console.log('✅ Redis connected');
+        isConnected = true;
+      });
+
+      // Connect the client
+      await redisClient.connect();
+      isConnected = true;
+    } catch (error) {
+      console.error('Failed to create Redis client:', error);
+      redisClient = null;
+      isConnected = false;
+      return null;
+    }
   }
   return redisClient;
 }
@@ -97,6 +116,15 @@ export async function getCache<T>(
 ): Promise<T | null> {
   try {
     const client = await getClient();
+
+    // If Redis is not available, use loader if provided
+    if (!client) {
+      if (options?.loader) {
+        return await options.loader();
+      }
+      return null;
+    }
+
     const value = await client.get(key);
 
     if (value) {
@@ -133,6 +161,15 @@ export async function getCache<T>(
   } catch (error) {
     cacheStats.errors++;
     console.error(`Error getting cache for key ${key}:`, error);
+
+    // If loader provided, use it as fallback
+    if (options?.loader) {
+      try {
+        return await options.loader();
+      } catch (loaderError) {
+        console.error('Loader also failed:', loaderError);
+      }
+    }
     return null;
   }
 }
@@ -148,6 +185,12 @@ export async function setCache<T>(
 ): Promise<void> {
   try {
     const client = await getClient();
+
+    // If Redis is not available, skip caching silently
+    if (!client) {
+      return;
+    }
+
     const serialized = JSON.stringify(value);
 
     // Use transaction for atomic operations
@@ -179,6 +222,7 @@ export async function setCache<T>(
   } catch (error) {
     cacheStats.errors++;
     console.error(`Error setting cache for key ${key}:`, error);
+    // Silently fail - cache is not critical
   }
 }
 
