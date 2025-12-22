@@ -369,8 +369,10 @@ const nextConfig = {
       '@headlessui/react',
       '@heroicons/react',
     ],
-    workerThreads: true,
-    cpus: 8,
+    // Disable worker threads to avoid cache IPC lock URLs resolving to undefined during build
+    workerThreads: false,
+    // Disable static worker request deduping to prevent Next from spawning cache IPC on ephemeral localhost ports during prerender
+    staticWorkerRequestDeduping: false,
     scrollRestoration: true,
     // Module resolution optimizations
     externalDir: true,
