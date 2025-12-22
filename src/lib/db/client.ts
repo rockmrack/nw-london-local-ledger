@@ -6,7 +6,12 @@
 import postgres from 'postgres';
 
 // Database connection configuration
-const connectionString = process.env.DATABASE_URL || 'postgresql://localhost:5432/nw_ledger';
+const connectionString = process.env.DATABASE_URL;
+
+// Warn if database is not configured
+if (!connectionString) {
+  console.warn('⚠️  DATABASE_URL not configured - database operations will be unavailable');
+}
 
 const options: postgres.Options<{}> = {
   max: parseInt(process.env.DATABASE_POOL_MAX || '50', 10), // Increased from 10 to 50 for better concurrency
@@ -23,7 +28,12 @@ const options: postgres.Options<{}> = {
 // Lazy database connection
 let _sql: postgres.Sql<{}> | null = null;
 
-function getClient(): postgres.Sql<{}> {
+function getClient(): postgres.Sql<{}> | null {
+  // Don't create client if database URL is not configured
+  if (!connectionString) {
+    return null;
+  }
+
   if (!_sql) {
     _sql = postgres(connectionString, options);
   }
@@ -34,11 +44,17 @@ function getClient(): postgres.Sql<{}> {
 export const sql = new Proxy({} as postgres.Sql<{}>, {
   get(target, prop) {
     const client = getClient();
+    if (!client) {
+      throw new Error('Database not configured - set DATABASE_URL environment variable');
+    }
     const value = (client as any)[prop];
     return typeof value === 'function' ? value.bind(client) : value;
   },
   apply(target, thisArg, args) {
     const client = getClient();
+    if (!client) {
+      throw new Error('Database not configured - set DATABASE_URL environment variable');
+    }
     return (client as any)(...args);
   }
 });
