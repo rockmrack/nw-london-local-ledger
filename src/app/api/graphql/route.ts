@@ -13,26 +13,34 @@ import { MultiLayerCache } from '@/lib/cache/multi-layer-cache';
 const monitoring = new MonitoringService();
 const cache = new MultiLayerCache();
 
-// Create GraphQL server
-const server = createGraphQLServer();
+// Lazy initialization for GraphQL server
+let server: Awaited<ReturnType<typeof createGraphQLServer>> | null = null;
+let handler: any = null;
 
-// Create handler
-const handler = startServerAndCreateNextHandler<NextRequest>(server, {
-  context: async (req) => {
-    const startTime = Date.now();
+async function getHandler() {
+  if (!handler) {
+    server = createGraphQLServer();
+    await server.start();
 
-    // Check for authentication if needed
-    const authHeader = req.headers.get('authorization');
+    handler = startServerAndCreateNextHandler<NextRequest>(server, {
+      context: async (req) => {
+        const startTime = Date.now();
 
-    // Create context
-    const context = await createGraphQLContext();
+        // Check for authentication if needed
+        const authHeader = req.headers.get('authorization');
 
-    // Record context creation time
-    monitoring.recordMetric('graphql.context.creation', Date.now() - startTime);
+        // Create context
+        const context = await createGraphQLContext();
 
-    return context;
+        // Record context creation time
+        monitoring.recordMetric('graphql.context.creation', Date.now() - startTime);
+
+        return context;
+      }
+    });
   }
-});
+  return handler;
+}
 
 // OPTIONS handler for CORS
 export async function OPTIONS(req: NextRequest) {
@@ -94,7 +102,8 @@ export async function GET(req: NextRequest) {
     }
 
     // Process request
-    const response = await handler(req);
+    const currentHandler = await getHandler();
+    const response = await currentHandler(req);
 
     // Cache successful responses
     if (response.status === 200) {
@@ -157,7 +166,8 @@ export async function POST(req: NextRequest) {
 
         monitoring.recordMetric('graphql.persisted.used', 1);
 
-        const response = await handler(modifiedReq);
+        const currentHandler = await getHandler();
+        const response = await currentHandler(modifiedReq);
         monitoring.recordMetric('graphql.request.duration', Date.now() - startTime);
 
         // Add CORS headers
@@ -209,7 +219,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Process request
-    const response = await handler(req);
+    const currentHandler = await getHandler();
+    const response = await currentHandler(req);
 
     // Cache successful query responses
     if (response.status === 200 && cacheKey) {
