@@ -29,6 +29,16 @@ const SearchWidget = dynamic(() => import('@/components/home/SearchWidget'), {
   ssr: true,
 });
 
+// Pick a safe API base URL that works in build (no localhost defaults that lack a running server)
+const getApiBaseUrl = () => {
+  if (process.env.NEXT_PUBLIC_BASE_URL) return process.env.NEXT_PUBLIC_BASE_URL;
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  if (process.env.PORT) return `http://localhost:${process.env.PORT}`;
+  return 'https://api.nwlondonledger.com';
+};
+
+const apiBaseUrl = getApiBaseUrl();
+
 // Configure ISR for homepage
 export const revalidate = ISRConfig.revalidation.homepage; // 12 hours
 export const runtime = 'nodejs'; // Ensure Node.js runtime for streaming
@@ -47,7 +57,11 @@ export const metadata: Metadata = {
 // Async data fetching functions
 async function getFeaturedProperties() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/properties?featured=true&limit=6`, {
+    const url = new URL('/api/properties', apiBaseUrl);
+    url.searchParams.set('featured', 'true');
+    url.searchParams.set('limit', '6');
+
+    const res = await fetch(url.toString(), {
       next: { revalidate: 3600, tags: ['properties'] },
     });
     if (!res.ok) throw new Error('Failed to fetch properties');
@@ -60,7 +74,10 @@ async function getFeaturedProperties() {
 
 async function getLatestNews() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/news?limit=4`, {
+    const url = new URL('/api/news', apiBaseUrl);
+    url.searchParams.set('limit', '4');
+
+    const res = await fetch(url.toString(), {
       next: { revalidate: 1800, tags: ['news'] },
     });
     if (!res.ok) throw new Error('Failed to fetch news');
@@ -73,7 +90,9 @@ async function getLatestNews() {
 
 async function getMarketStats() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/ml/metrics`, {
+    const url = new URL('/api/ml/metrics', apiBaseUrl);
+
+    const res = await fetch(url.toString(), {
       next: { revalidate: 7200, tags: ['metrics'] },
     });
     if (!res.ok) throw new Error('Failed to fetch metrics');
