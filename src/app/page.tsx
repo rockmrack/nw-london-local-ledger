@@ -40,6 +40,7 @@ const getApiBaseUrl = () => {
 const apiBaseUrl = getApiBaseUrl();
 
 // Configure ISR for homepage
+export const dynamic = 'force-dynamic'; // Prevent build-time prerendering
 export const revalidate = ISRConfig.revalidation.homepage; // 12 hours
 export const runtime = 'nodejs'; // Ensure Node.js runtime for streaming
 
@@ -54,49 +55,56 @@ export const metadata: Metadata = {
   },
 };
 
-// Async data fetching functions
+// Async data fetching functions - using services directly instead of fetch
 async function getFeaturedProperties() {
   try {
-    const url = new URL('/api/properties', apiBaseUrl);
-    url.searchParams.set('featured', 'true');
-    url.searchParams.set('limit', '6');
+    // Dynamic import to avoid build-time evaluation
+    const { propertyService } = await import('@/services/property/PropertyService');
+    const { getCache, setCache } = await import('@/lib/cache/redis');
 
-    const res = await fetch(url.toString(), {
-      next: { revalidate: 3600, tags: ['properties'] },
+    const cacheKey = 'homepage:featured-properties';
+    const cached = await getCache(cacheKey);
+    if (cached) return cached;
+
+    const result = await propertyService.searchProperties({
+      page: 1,
+      limit: 6,
+      sortBy: 'date',
+      sortOrder: 'desc',
     });
-    if (!res.ok) throw new Error('Failed to fetch properties');
-    return res.json();
+
+    await setCache(cacheKey, result, 3600); // Cache for 1 hour
+    return result;
   } catch (error) {
     console.error('Error fetching properties:', error);
-    return { properties: [] };
+    return { properties: [], total: 0 };
   }
 }
 
 async function getLatestNews() {
   try {
-    const url = new URL('/api/news', apiBaseUrl);
-    url.searchParams.set('limit', '4');
+    // Dynamic import to avoid build-time evaluation
+    const { newsService } = await import('@/services/news/NewsService');
+    const { getCache, setCache } = await import('@/lib/cache/redis');
 
-    const res = await fetch(url.toString(), {
-      next: { revalidate: 1800, tags: ['news'] },
-    });
-    if (!res.ok) throw new Error('Failed to fetch news');
-    return res.json();
+    const cacheKey = 'homepage:latest-news';
+    const cached = await getCache(cacheKey);
+    if (cached) return cached;
+
+    const result = await newsService.getPublishedArticles(1, 4);
+
+    await setCache(cacheKey, result, 1800); // Cache for 30 minutes
+    return result;
   } catch (error) {
     console.error('Error fetching news:', error);
-    return { articles: [] };
+    return { articles: [], total: 0 };
   }
 }
 
 async function getMarketStats() {
   try {
-    const url = new URL('/api/ml/metrics', apiBaseUrl);
-
-    const res = await fetch(url.toString(), {
-      next: { revalidate: 7200, tags: ['metrics'] },
-    });
-    if (!res.ok) throw new Error('Failed to fetch metrics');
-    return res.json();
+    // For now, return empty stats - this can be implemented when the ML service is ready
+    return { stats: {} };
   } catch (error) {
     console.error('Error fetching metrics:', error);
     return { stats: {} };
