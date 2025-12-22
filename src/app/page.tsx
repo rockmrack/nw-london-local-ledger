@@ -1,30 +1,30 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import dynamic from 'next/dynamic';
+import dynamicImport from 'next/dynamic';
 import { ISRConfig } from '@/lib/isr/config';
 import { ProgressiveHydration } from '@/components/ProgressiveHydration';
 
 // Lazy load components for code splitting
-const HeroSection = dynamic(() => import('@/components/home/HeroSection'), {
+const HeroSection = dynamicImport(() => import('@/components/home/HeroSection'), {
   loading: () => <HeroSkeleton />,
 });
 
-const FeaturedProperties = dynamic(() => import('@/components/home/FeaturedProperties'), {
+const FeaturedProperties = dynamicImport(() => import('@/components/home/FeaturedProperties'), {
   loading: () => <PropertiesSkeleton />,
   ssr: true,
 });
 
-const LatestNews = dynamic(() => import('@/components/home/LatestNews'), {
+const LatestNews = dynamicImport(() => import('@/components/home/LatestNews'), {
   loading: () => <NewsSkeleton />,
   ssr: true,
 });
 
-const MarketInsights = dynamic(() => import('@/components/home/MarketInsights'), {
+const MarketInsights = dynamicImport(() => import('@/components/home/MarketInsights'), {
   loading: () => <InsightsSkeleton />,
   ssr: false, // Client-side only for non-critical content
 });
 
-const SearchWidget = dynamic(() => import('@/components/home/SearchWidget'), {
+const SearchWidget = dynamicImport(() => import('@/components/home/SearchWidget'), {
   loading: () => <SearchSkeleton />,
   ssr: true,
 });
