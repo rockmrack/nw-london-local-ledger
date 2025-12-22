@@ -4,15 +4,18 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { newsService } from '@/services/news/NewsService';
-import { getCache, setCache } from '@/lib/cache/redis';
-import { validatePaginationParams } from '@/lib/utils/validation';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
   try {
+    // Dynamic imports to avoid build-time evaluation
+    const { newsService } = await import('@/services/news/NewsService');
+    const { getCache, setCache } = await import('@/lib/cache/redis');
+    const { validatePaginationParams } = await import('@/lib/utils/validation');
+
     const searchParams = request.nextUrl.searchParams;
     const { page, limit } = validatePaginationParams(
       searchParams.get('page'),

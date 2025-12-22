@@ -20,9 +20,6 @@ interface ArticleDetailResponse {
 
 // Force dynamic rendering to prevent build-time data fetching
 export const dynamic = 'force-dynamic';
-export const revalidate = ISRConfig.revalidation.news;
-
-// Configure ISR revalidation
 export const revalidate = ISRConfig.revalidation.news; // 3 hours
 export const dynamicParams = true; // Allow on-demand generation for new articles
 
