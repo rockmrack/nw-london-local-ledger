@@ -19,7 +19,17 @@ export const metadata: Metadata = {
 };
 
 async function getAreas(): Promise<Area[]> {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+  // Check if we have a base URL available
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
+                  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null);
+  
+  // During build without a server, return empty array
+  // The page will be generated with empty content and populated at runtime
+  if (!baseUrl) {
+    console.log('Build context detected - areas page will be populated at runtime');
+    return [];
+  }
+
   const url = `${baseUrl}/api/areas`;
 
   try {
@@ -30,7 +40,9 @@ async function getAreas(): Promise<Area[]> {
       },
     });
     if (!response.ok) throw new Error('Failed to fetch areas');
-    return await response.json();
+    const data = await response.json();
+    // Handle both direct array and object with areas property
+    return Array.isArray(data) ? data : (data.areas || []);
   } catch (error) {
     console.error('Error fetching areas:', error);
     return [];

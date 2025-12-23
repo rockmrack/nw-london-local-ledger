@@ -6,6 +6,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { monitoringService } from '@/lib/monitoring/monitoring-service';
 import { databaseMonitor } from '@/lib/monitoring/database-monitor';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;

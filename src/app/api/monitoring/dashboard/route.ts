@@ -7,6 +7,8 @@ import { monitoringService } from '@/lib/monitoring/monitoring-service';
 import { databaseMonitor } from '@/lib/monitoring/database-monitor';
 import { AlertManager } from '@/lib/monitoring/alert-manager';
 
+export const dynamic = 'force-dynamic';
+
 const alertManager = (monitoringService as any).alertManager as AlertManager;
 
 export async function GET(request: NextRequest) {

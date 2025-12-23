@@ -7,6 +7,28 @@ import { cache } from 'react';
 import { ISRConfig } from './config';
 
 /**
+ * Check if we're in a build context (no runtime server available)
+ */
+function isBuildContext(): boolean {
+  // During Vercel build, NEXT_PHASE is set to 'phase-production-build'
+  return process.env.NEXT_PHASE === 'phase-production-build' || 
+         process.env.NODE_ENV === 'production' && !process.env.VERCEL_URL;
+}
+
+/**
+ * Get base URL for API calls, handling build context
+ */
+function getApiBaseUrl(): string | null {
+  // During build, if no production URL is available, return null to skip fetching
+  if (isBuildContext() && !process.env.VERCEL_URL && !process.env.NEXT_PUBLIC_BASE_URL) {
+    return null;
+  }
+  
+  return process.env.NEXT_PUBLIC_BASE_URL || 
+         (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null);
+}
+
+/**
  * Create a cached fetch function with ISR configuration
  */
 export const createISRFetch = (revalidate: number) => {
@@ -27,7 +49,14 @@ export const createISRFetch = (revalidate: number) => {
  * Get all area slugs for static generation
  */
 export async function getAllAreaSlugs(): Promise<string[]> {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+  const baseUrl = getApiBaseUrl();
+
+  // During build without a server, return empty array to skip static generation
+  // Pages will be generated on-demand at runtime
+  if (!baseUrl) {
+    console.log('Build context detected - skipping area static generation');
+    return [];
+  }
 
   try {
     const response = await fetch(`${baseUrl}/api/areas`, {
@@ -51,7 +80,14 @@ export async function getAllAreaSlugs(): Promise<string[]> {
  * Get top property slugs for static generation
  */
 export async function getTopPropertySlugs(limit: number = 1000): Promise<string[]> {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+  const baseUrl = getApiBaseUrl();
+
+  // During build without a server, return empty array to skip static generation
+  // Pages will be generated on-demand at runtime
+  if (!baseUrl) {
+    console.log('Build context detected - skipping property static generation');
+    return [];
+  }
 
   try {
     const response = await fetch(
@@ -78,7 +114,14 @@ export async function getTopPropertySlugs(limit: number = 1000): Promise<string[
  * Get recent planning application IDs for static generation
  */
 export async function getRecentPlanningIds(limit: number = 100): Promise<string[]> {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+  const baseUrl = getApiBaseUrl();
+
+  // During build without a server, return empty array to skip static generation
+  // Pages will be generated on-demand at runtime
+  if (!baseUrl) {
+    console.log('Build context detected - skipping planning static generation');
+    return [];
+  }
 
   try {
     const response = await fetch(
@@ -105,7 +148,14 @@ export async function getRecentPlanningIds(limit: number = 100): Promise<string[
  * Get news article slugs for static generation
  */
 export async function getNewsArticleSlugs(limit: number = 50): Promise<string[]> {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+  const baseUrl = getApiBaseUrl();
+
+  // During build without a server, return empty array to skip static generation
+  // Pages will be generated on-demand at runtime
+  if (!baseUrl) {
+    console.log('Build context detected - skipping news static generation');
+    return [];
+  }
 
   try {
     const response = await fetch(

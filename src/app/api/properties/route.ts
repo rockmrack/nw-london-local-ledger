@@ -8,6 +8,8 @@ import { propertyService } from '@/services/property/PropertyService';
 import { validatePaginationParams } from '@/lib/utils/validation';
 import { getCache, setCache } from '@/lib/cache/redis';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
