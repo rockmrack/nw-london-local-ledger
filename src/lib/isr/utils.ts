@@ -5,14 +5,23 @@
 
 import { cache } from 'react';
 import { ISRConfig } from './config';
+import { areaService } from '@/services/area/AreaService';
+import { propertyService } from '@/services/property/PropertyService';
+import { planningService } from '@/services/planning/PlanningService';
+import { newsService } from '@/services/news/NewsService';
 
 /**
  * Check if we're in a build context (no runtime server available)
  */
 function isBuildContext(): boolean {
   // During Vercel build, NEXT_PHASE is set to 'phase-production-build'
-  return process.env.NEXT_PHASE === 'phase-production-build' || 
-         process.env.NODE_ENV === 'production' && !process.env.VERCEL_URL;
+  // Also check if we're in a CI environment or if runtime variables are missing
+  return (
+    process.env.NEXT_PHASE === 'phase-production-build' || 
+    process.env.CI === 'true' ||
+    process.env.VERCEL_ENV === 'production' && !process.env.VERCEL_URL ||
+    typeof window === 'undefined' && process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL
+  );
 }
 
 /**
@@ -49,27 +58,15 @@ export const createISRFetch = (revalidate: number) => {
  * Get all area slugs for static generation
  */
 export async function getAllAreaSlugs(): Promise<string[]> {
-  const baseUrl = getApiBaseUrl();
-
-  // During build without a server, return empty array to skip static generation
-  // Pages will be generated on-demand at runtime
-  if (!baseUrl) {
-    console.log('Build context detected - skipping area static generation');
-    return [];
-  }
-
   try {
-    const response = await fetch(`${baseUrl}/api/areas`, {
-      next: { revalidate: ISRConfig.revalidation.areas },
-    });
-
-    if (!response.ok) {
-      console.error('Failed to fetch areas for static generation');
+    // During build, if no database connection is available, return empty array
+    // Pages will be generated on-demand (ISR) instead of at build time
+    if (isBuildContext() && !process.env.DATABASE_URL) {
+      console.log('Build context detected without DATABASE_URL - skipping static generation for areas');
       return [];
     }
-
-    const data = await response.json();
-    return data.areas?.map((area: any) => area.slug) || [];
+    const areas = await areaService.getAllAreas();
+    return areas.map(area => area.slug);
   } catch (error) {
     console.error('Error fetching area slugs:', error);
     return [];
@@ -80,30 +77,18 @@ export async function getAllAreaSlugs(): Promise<string[]> {
  * Get top property slugs for static generation
  */
 export async function getTopPropertySlugs(limit: number = 1000): Promise<string[]> {
-  const baseUrl = getApiBaseUrl();
-
-  // During build without a server, return empty array to skip static generation
-  // Pages will be generated on-demand at runtime
-  if (!baseUrl) {
-    console.log('Build context detected - skipping property static generation');
-    return [];
-  }
-
   try {
-    const response = await fetch(
-      `${baseUrl}/api/properties?limit=${limit}&sort=views_desc`,
-      {
-        next: { revalidate: ISRConfig.revalidation.properties },
-      }
-    );
-
-    if (!response.ok) {
-      console.error('Failed to fetch properties for static generation');
+    // During build, if no database connection is available, return empty array
+    if (isBuildContext() && !process.env.DATABASE_URL) {
+      console.log('Build context detected without DATABASE_URL - skipping static generation for properties');
       return [];
     }
-
-    const data = await response.json();
-    return data.properties?.map((prop: any) => prop.slug) || [];
+    const result = await propertyService.searchProperties({
+      limit,
+      sortBy: 'date',
+      sortOrder: 'desc'
+    });
+    return result.properties.map(prop => prop.slug);
   } catch (error) {
     console.error('Error fetching property slugs:', error);
     return [];
@@ -114,30 +99,14 @@ export async function getTopPropertySlugs(limit: number = 1000): Promise<string[
  * Get recent planning application IDs for static generation
  */
 export async function getRecentPlanningIds(limit: number = 100): Promise<string[]> {
-  const baseUrl = getApiBaseUrl();
-
-  // During build without a server, return empty array to skip static generation
-  // Pages will be generated on-demand at runtime
-  if (!baseUrl) {
-    console.log('Build context detected - skipping planning static generation');
-    return [];
-  }
-
   try {
-    const response = await fetch(
-      `${baseUrl}/api/planning?limit=${limit}&sort=date_desc`,
-      {
-        next: { revalidate: ISRConfig.revalidation.planning },
-      }
-    );
-
-    if (!response.ok) {
-      console.error('Failed to fetch planning applications for static generation');
+    // During build, if no database connection is available, return empty array
+    if (isBuildContext() && !process.env.DATABASE_URL) {
+      console.log('Build context detected without DATABASE_URL - skipping static generation for planning');
       return [];
     }
-
-    const data = await response.json();
-    return data.applications?.map((app: any) => app.reference || app.id) || [];
+    const result = await planningService.searchPlanningApplications({ limit });
+    return result.applications.map(app => app.slug || app.reference);
   } catch (error) {
     console.error('Error fetching planning IDs:', error);
     return [];
@@ -148,30 +117,9 @@ export async function getRecentPlanningIds(limit: number = 100): Promise<string[
  * Get news article slugs for static generation
  */
 export async function getNewsArticleSlugs(limit: number = 50): Promise<string[]> {
-  const baseUrl = getApiBaseUrl();
-
-  // During build without a server, return empty array to skip static generation
-  // Pages will be generated on-demand at runtime
-  if (!baseUrl) {
-    console.log('Build context detected - skipping news static generation');
-    return [];
-  }
-
   try {
-    const response = await fetch(
-      `${baseUrl}/api/news?limit=${limit}`,
-      {
-        next: { revalidate: ISRConfig.revalidation.news },
-      }
-    );
-
-    if (!response.ok) {
-      console.error('Failed to fetch news for static generation');
-      return [];
-    }
-
-    const data = await response.json();
-    return data.articles?.map((article: any) => article.slug) || [];
+    const result = await newsService.getPublishedArticles(1, limit);
+    return result.articles.map(article => article.slug);
   } catch (error) {
     console.error('Error fetching news slugs:', error);
     return [];

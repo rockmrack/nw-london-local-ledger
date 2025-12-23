@@ -12,6 +12,8 @@ import { SchemaMarkup, generatePlanningSchema } from '@/lib/seo/schema';
 import { ISRConfig } from '@/lib/isr/config';
 import { getRecentPlanningIds } from '@/lib/isr/utils';
 import type { PlanningApplication } from '@/types/planning';
+import { planningService } from '@/services/planning/PlanningService';
+import { propertyService } from '@/services/property/PropertyService';
 
 interface PlanningDetailResponse {
   application: PlanningApplication;
@@ -31,18 +33,33 @@ export const revalidate = ISRConfig.revalidation.planning; // 1 hour
 export const dynamicParams = true; // Allow on-demand generation for new applications
 
 async function getPlanningData(slug: string): Promise<PlanningDetailResponse | null> {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-  const url = `${baseUrl}/api/planning/${slug}`;
-
   try {
-    const response = await fetch(url, {
-      next: {
-        revalidate: ISRConfig.revalidation.planning,
-        tags: [ISRConfig.tags.planning, `planning-${slug}`],
-      },
-    });
-    if (!response.ok) return null;
-    return await response.json();
+    const application = await planningService.getPlanningBySlug(slug);
+    if (!application) return null;
+
+    const [documents, comments, nearbyApplications, relatedProperty] = await Promise.all([
+      planningService.getDocuments(application.id),
+      planningService.getComments(application.id),
+      application.latitude && application.longitude
+        ? planningService.getNearbyApplications(application.latitude, application.longitude, 500, 10)
+        : [],
+      application.propertyId
+        ? propertyService.getPropertyById(application.propertyId)
+        : null,
+    ]);
+
+    // Attach documents and comments to application object as expected by the page
+    const applicationWithDetails = {
+      ...application,
+      documents,
+      comments,
+      relatedProperty
+    };
+
+    return {
+      application: applicationWithDetails as unknown as PlanningApplication,
+      relatedApplications: nearbyApplications,
+    };
   } catch (error) {
     console.error('Error fetching planning application:', error);
     return null;

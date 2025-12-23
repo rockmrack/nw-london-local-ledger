@@ -172,17 +172,9 @@ const nextConfig = {
   async rewrites() {
     return {
       beforeFiles: [
-        // Regional API routing
-        {
-          source: '/api/:path*',
-          destination: 'https://api-:region.nwlondonledger.com/:path*',
-          has: [
-            {
-              type: 'header',
-              key: 'x-region',
-            },
-          ],
-        },
+        // Regional API routing - disabled for now due to URL format limitations
+        // Next.js rewrites don't support dynamic URL interpolation in destination
+        // This would need to be handled via middleware or edge functions
       ],
       afterFiles: [
         // Service Worker
