@@ -6,7 +6,12 @@
 import postgres from 'postgres';
 
 // Database connection configuration
-const connectionString = process.env.DATABASE_URL || 'postgresql://localhost:5432/nw_ledger';
+const connectionString = process.env.DATABASE_URL;
+
+// Don't create client if no DATABASE_URL provided
+if (!connectionString) {
+  console.warn('⚠️ DATABASE_URL not set - database operations will fail');
+}
 
 const options: postgres.Options<{}> = {
   max: parseInt(process.env.DATABASE_POOL_MAX || '50', 10), // Increased from 10 to 50 for better concurrency
@@ -24,6 +29,9 @@ const options: postgres.Options<{}> = {
 let _sql: postgres.Sql<{}> | null = null;
 
 function getClient(): postgres.Sql<{}> {
+  if (!connectionString) {
+    throw new Error('DATABASE_URL environment variable is not set');
+  }
   if (!_sql) {
     _sql = postgres(connectionString, options);
   }
