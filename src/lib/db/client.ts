@@ -20,7 +20,7 @@ const options: postgres.Options<{}> = {
   onnotice: () => {}, // Suppress notices for cleaner logs
 };
 
-// Lazy database connection
+// Lazy database connection - use direct instantiation instead of Proxy for webpack compatibility
 let _sql: postgres.Sql<{}> | null = null;
 
 function getClient(): postgres.Sql<{}> {
@@ -30,18 +30,8 @@ function getClient(): postgres.Sql<{}> {
   return _sql;
 }
 
-// Create database connection proxy for lazy initialization
-export const sql = new Proxy({} as postgres.Sql<{}>, {
-  get(target, prop) {
-    const client = getClient();
-    const value = (client as any)[prop];
-    return typeof value === 'function' ? value.bind(client) : value;
-  },
-  apply(target, thisArg, args) {
-    const client = getClient();
-    return (client as any)(...args);
-  }
-});
+// Direct export for webpack compatibility (no Proxy)
+const sql = getClient();
 
 // Type-safe query helper
 export type SQL = typeof sql;
