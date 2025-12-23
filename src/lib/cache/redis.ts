@@ -96,6 +96,14 @@ export async function getCache<T>(
   }
 ): Promise<T | null> {
   try {
+    // Skip cache if not connected (e.g., during build/static export)
+    if (!isConnected) {
+      if (options?.loader) {
+        return await options.loader();
+      }
+      return null;
+    }
+
     const client = await getClient();
     const value = await client.get(key);
 
@@ -133,6 +141,17 @@ export async function getCache<T>(
   } catch (error) {
     cacheStats.errors++;
     console.error(`Error getting cache for key ${key}:`, error);
+    
+    // If loader is provided, use it as fallback
+    if (options?.loader) {
+      try {
+        return await options.loader();
+      } catch (loaderError) {
+        console.error(`Error running loader for key ${key}:`, loaderError);
+        return null;
+      }
+    }
+    
     return null;
   }
 }
@@ -147,6 +166,11 @@ export async function setCache<T>(
   tags?: string[]
 ): Promise<void> {
   try {
+    // Skip cache if not connected (e.g., during build/static export)
+    if (!isConnected) {
+      return;
+    }
+
     const client = await getClient();
     const serialized = JSON.stringify(value);
 

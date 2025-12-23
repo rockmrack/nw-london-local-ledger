@@ -7,9 +7,20 @@ import OpenAI from 'openai';
 import type { Area } from '@/types/area';
 import type { Property } from '@/types/property';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Lazy OpenAI client initialization to avoid build-time errors
+let openaiClient: OpenAI | null = null;
+
+function getOpenAIClient(): OpenAI {
+  if (!openaiClient) {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY environment variable is required');
+    }
+    openaiClient = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+  }
+  return openaiClient;
+}
 
 export interface ContentGenerationOptions {
   tone?: 'professional' | 'friendly' | 'informative';
@@ -34,7 +45,7 @@ export class AIContentService {
     const prompt = this.buildAreaGuidePrompt(area, stats, tone, length);
 
     try {
-      const completion = await openai.chat.completions.create({
+      const completion = await getOpenAIClient().chat.completions.create({
         model: this.model,
         messages: [
           {
@@ -86,7 +97,7 @@ Write a compelling news article (400-600 words) that:
 Format as JSON with: { "title": "...", "excerpt": "...", "content": "..." }`;
 
     try {
-      const completion = await openai.chat.completions.create({
+      const completion = await getOpenAIClient().chat.completions.create({
         model: this.model,
         messages: [
           {
@@ -134,7 +145,7 @@ Write 2-3 paragraphs highlighting:
 Be factual but engaging. Don't make claims you can't verify.`;
 
     try {
-      const completion = await openai.chat.completions.create({
+      const completion = await getOpenAIClient().chat.completions.create({
         model: this.model,
         messages: [
           {
@@ -181,7 +192,7 @@ Write a 300-400 word market update that:
 Return as JSON: { "title": "...", "content": "..." }`;
 
     try {
-      const completion = await openai.chat.completions.create({
+      const completion = await getOpenAIClient().chat.completions.create({
         model: this.model,
         messages: [
           {
@@ -220,7 +231,7 @@ ${proposal}
 Focus on what is being proposed and its key features.`;
 
     try {
-      const completion = await openai.chat.completions.create({
+      const completion = await getOpenAIClient().chat.completions.create({
         model: this.model,
         messages: [
           {
@@ -324,3 +335,4 @@ Focus on facts and real benefits. Make it engaging and useful for potential resi
 
 // Export singleton instance
 export const aiContentService = new AIContentService();
+

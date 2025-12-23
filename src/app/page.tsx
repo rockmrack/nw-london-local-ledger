@@ -3,6 +3,8 @@ import { Suspense } from 'react';
 import dynamicImport from 'next/dynamic';
 import { ISRConfig } from '@/lib/isr/config';
 import { ProgressiveHydration } from '@/components/ProgressiveHydration';
+import { propertyService } from '@/services/property/PropertyService';
+import { newsService } from '@/services/news/NewsService';
 
 // Lazy load components for code splitting
 const HeroSection = dynamicImport(() => import('@/components/home/HeroSection'), {
@@ -29,16 +31,6 @@ const SearchWidget = dynamicImport(() => import('@/components/home/SearchWidget'
   ssr: true,
 });
 
-// Pick a safe API base URL that works in build (no localhost defaults that lack a running server)
-const getApiBaseUrl = () => {
-  if (process.env.NEXT_PUBLIC_BASE_URL) return process.env.NEXT_PUBLIC_BASE_URL;
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  if (process.env.PORT) return `http://localhost:${process.env.PORT}`;
-  return 'https://api.nwlondonledger.com';
-};
-
-const apiBaseUrl = getApiBaseUrl();
-
 // Configure ISR for homepage
 export const dynamic = 'force-dynamic'; // Prevent build-time prerendering
 export const revalidate = ISRConfig.revalidation.homepage; // 12 hours
@@ -55,19 +47,27 @@ export const metadata: Metadata = {
   },
 };
 
-// Async data fetching functions - return empty data during build
+// Async data fetching functions
 async function getFeaturedProperties() {
-  // Return empty data during build to prevent database connection errors
-  return { properties: [], total: 0 };
+  try {
+    return await propertyService.searchProperties({ limit: 6, sortBy: 'date', sortOrder: 'desc' });
+  } catch (error) {
+    console.error('Error fetching featured properties:', error);
+    return { properties: [], total: 0 };
+  }
 }
 
 async function getLatestNews() {
-  // Return empty data during build to prevent database connection errors
-  return { articles: [], total: 0 };
+  try {
+    return await newsService.getPublishedArticles(1, 3);
+  } catch (error) {
+    console.error('Error fetching latest news:', error);
+    return { articles: [], total: 0 };
+  }
 }
 
 async function getMarketStats() {
-  // Return empty data during build
+  // Return empty data for now
   return { stats: {} };
 }
 

@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { ISRConfig } from '@/lib/isr/config';
 import type { Area } from '@/types/area';
+import { areaService } from '@/services/area/AreaService';
 
 // Configure ISR for areas list page
 export const revalidate = ISRConfig.revalidation.areas; // 24 hours
@@ -19,18 +20,8 @@ export const metadata: Metadata = {
 };
 
 async function getAreas(): Promise<Area[]> {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-  const url = `${baseUrl}/api/areas`;
-
   try {
-    const response = await fetch(url, {
-      next: {
-        revalidate: ISRConfig.revalidation.areas,
-        tags: [ISRConfig.tags.areas, 'areas-list'],
-      },
-    });
-    if (!response.ok) throw new Error('Failed to fetch areas');
-    return await response.json();
+    return await areaService.getAllAreas();
   } catch (error) {
     console.error('Error fetching areas:', error);
     return [];

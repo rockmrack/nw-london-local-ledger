@@ -8,8 +8,7 @@ import type { Metadata } from 'next';
 import { NewsCard } from '@/components/news/NewsCard';
 import { ISRConfig } from '@/lib/isr/config';
 import type { NewsArticle } from '@/types/news';
-
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+import { newsService } from '@/services/news/NewsService';
 
 // Configure ISR for news list page
 export const revalidate = ISRConfig.revalidation.news; // 3 hours
@@ -36,15 +35,7 @@ interface NewsListResponse {
 
 async function getNews(page = 1): Promise<NewsListResponse | null> {
   try {
-    const response = await fetch(`${baseUrl}/api/news?page=${page}`, {
-      next: {
-        revalidate: ISRConfig.revalidation.news,
-        tags: [ISRConfig.tags.news, 'news-list'],
-      },
-    });
-
-    if (!response.ok) return null;
-    return await response.json();
+    return await newsService.getPublishedArticles(page);
   } catch (error) {
     console.error('Error fetching news:', error);
     return null;

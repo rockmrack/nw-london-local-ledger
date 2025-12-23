@@ -15,6 +15,9 @@ import { getAllAreaSlugs } from '@/lib/isr/utils';
 import type { AreaStats, Area, School, Street } from '@/types/area';
 import type { Property } from '@/types/property';
 import type { PlanningApplication } from '@/types/planning';
+import { areaService } from '@/services/area/AreaService';
+import { propertyService } from '@/services/property/PropertyService';
+import { planningService } from '@/services/planning/PlanningService';
 
 interface AreaDetailResponse {
   area: Area;
@@ -35,21 +38,35 @@ export async function generateStaticParams() {
 
 // Configure ISR revalidation
 export const revalidate = ISRConfig.revalidation.areas; // 24 hours
-export const dynamicParams = false; // Don't allow new area pages, all areas are known
+export const dynamicParams = true; // Allow new area pages to be generated on-demand if not pre-built
 
 async function getAreaData(slug: string): Promise<AreaDetailResponse | null> {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-  const url = `${baseUrl}/api/areas/${slug}`;
-
   try {
-    const response = await fetch(url, {
-      next: {
-        revalidate: ISRConfig.revalidation.areas,
-        tags: [ISRConfig.tags.areas, `area-${slug}`],
-      },
-    });
-    if (!response.ok) return null;
-    return await response.json();
+    const area = await areaService.getAreaBySlug(slug);
+    if (!area) return null;
+
+    const [
+      stats,
+      recentProperties,
+      recentPlanning,
+      schools,
+      streets,
+    ] = await Promise.all([
+      areaService.getAreaStats(area.id),
+      propertyService.getPropertiesByArea(area.id, 10),
+      planningService.getPlanningByArea(area.id, 10),
+      areaService.getSchoolsByArea(area.id),
+      areaService.getStreetsByArea(area.id),
+    ]);
+
+    return {
+      area,
+      stats,
+      recentProperties,
+      recentPlanning,
+      schools,
+      streets,
+    };
   } catch (error) {
     console.error('Error fetching area:', error);
     return null;

@@ -9,30 +9,51 @@ import { createGraphQLServer, createGraphQLContext, getPersistedQuery } from '@/
 import { MonitoringService } from '@/lib/monitoring/monitoring-service';
 import { MultiLayerCache } from '@/lib/cache/multi-layer-cache';
 
+// Force dynamic rendering - do not prerender at build time
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 // Initialize services
 const monitoring = new MonitoringService();
 const cache = new MultiLayerCache();
 
-// Create GraphQL server
-const server = createGraphQLServer();
-
-// Create handler
-const handler = startServerAndCreateNextHandler<NextRequest>(server, {
-  context: async (req) => {
-    const startTime = Date.now();
-
-    // Check for authentication if needed
-    const authHeader = req.headers.get('authorization');
-
-    // Create context
-    const context = await createGraphQLContext();
-
-    // Record context creation time
-    monitoring.recordMetric('graphql.context.creation', Date.now() - startTime);
-
-    return context;
+// Create GraphQL server (lazy initialization to handle build-time)
+let server: any = null;
+function getServer() {
+  if (!server) {
+    try {
+      server = createGraphQLServer();
+    } catch (error) {
+      console.error('Error creating GraphQL server:', error);
+      // Return null - will be handled in route handlers
+    }
   }
-});
+  return server;
+}
+
+// Create handler with lazy server initialization
+function getHandler() {
+  const srv = getServer();
+  if (!srv) {
+    return null;
+  }
+  return startServerAndCreateNextHandler<NextRequest>(srv, {
+    context: async (req) => {
+      const startTime = Date.now();
+
+      // Check for authentication if needed
+      const authHeader = req.headers.get('authorization');
+
+      // Create context
+      const context = await createGraphQLContext();
+
+      // Record context creation time
+      monitoring.recordMetric('graphql.context.creation', Date.now() - startTime);
+
+      return context;
+    }
+  });
+}
 
 // OPTIONS handler for CORS
 export async function OPTIONS(req: NextRequest) {
@@ -52,6 +73,15 @@ export async function GET(req: NextRequest) {
   const startTime = Date.now();
 
   try {
+    // Check if handler is available
+    const handler = getHandler();
+    if (!handler) {
+      return NextResponse.json(
+        { errors: [{ message: 'GraphQL server not available' }] },
+        { status: 503 }
+      );
+    }
+
     // Check for cached response first
     const url = new URL(req.url);
     const query = url.searchParams.get('query');
@@ -137,6 +167,15 @@ export async function POST(req: NextRequest) {
   const startTime = Date.now();
 
   try {
+    // Check if handler is available
+    const handler = getHandler();
+    if (!handler) {
+      return NextResponse.json(
+        { errors: [{ message: 'GraphQL server not available' }] },
+        { status: 503 }
+      );
+    }
+
     // Parse request body
     const body = await req.json();
     const { query, variables, operationName, extensions } = body;

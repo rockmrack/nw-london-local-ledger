@@ -6,6 +6,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getMultiLayerCache } from '@/lib/cache/multi-layer-cache';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const cache = getMultiLayerCache();

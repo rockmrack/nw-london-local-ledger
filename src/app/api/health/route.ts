@@ -6,6 +6,8 @@
 import { NextResponse } from 'next/server';
 import { testConnection } from '@/lib/db/client';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const dbHealthy = await testConnection();

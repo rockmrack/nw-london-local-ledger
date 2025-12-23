@@ -14,6 +14,8 @@ import { ISRConfig } from '@/lib/isr/config';
 import { getTopPropertySlugs } from '@/lib/isr/utils';
 import type { PropertyWithSales, Property } from '@/types/property';
 import type { PlanningApplication } from '@/types/planning';
+import { propertyService } from '@/services/property/PropertyService';
+import { planningService } from '@/services/planning/PlanningService';
 
 interface PropertyDetailResponse {
   property: PropertyWithSales;
@@ -35,18 +37,27 @@ export const revalidate = ISRConfig.revalidation.properties; // 6 hours
 export const dynamicParams = true; // Allow on-demand generation for new properties
 
 async function getPropertyData(slug: string): Promise<PropertyDetailResponse | null> {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-  const url = `${baseUrl}/api/properties/${slug}`;
-
   try {
-    const response = await fetch(url, {
-      next: {
-        revalidate: ISRConfig.revalidation.properties,
-        tags: [ISRConfig.tags.properties, `property-${slug}`],
-      },
-    });
-    if (!response.ok) return null;
-    return await response.json();
+    const property = await propertyService.getPropertyBySlug(slug);
+    if (!property) return null;
+
+    const propertyWithSales = await propertyService.getPropertyWithSales(property.id);
+    if (!propertyWithSales) return null;
+
+    const [similarProperties, planningApplications, nearbyProperties] = await Promise.all([
+      propertyService.getSimilarProperties(property.id, 5),
+      property.id ? planningService.getPlanningByProperty(property.id) : [],
+      property.latitude && property.longitude
+        ? propertyService.getNearbyProperties(property.latitude, property.longitude, 500, 10)
+        : [],
+    ]);
+
+    return {
+      property: propertyWithSales,
+      similarProperties,
+      planningApplications,
+      nearbyProperties,
+    };
   } catch (error) {
     console.error('Error fetching property:', error);
     return null;

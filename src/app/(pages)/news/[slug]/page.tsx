@@ -10,8 +10,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { SchemaMarkup, generateArticleSchema } from '@/lib/seo/schema';
 import { ISRConfig } from '@/lib/isr/config';
 import type { NewsArticle, ArticleTag } from '@/types/news';
-
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+import { newsService } from '@/services/news/NewsService';
 
 interface ArticleDetailResponse {
   article: NewsArticle;
@@ -25,15 +24,22 @@ export const dynamicParams = true; // Allow on-demand generation for new article
 
 async function getArticle(slug: string): Promise<ArticleDetailResponse | null> {
   try {
-    const response = await fetch(`${baseUrl}/api/news/${slug}`, {
-      next: {
-        revalidate: ISRConfig.revalidation.news,
-        tags: [ISRConfig.tags.news, `news-${slug}`],
-      },
-    });
+    const article = await newsService.getArticleBySlug(slug);
+    if (!article) return null;
 
-    if (!response.ok) return null;
-    return await response.json();
+    const tags = await newsService.getArticleTags(article.id);
+
+    // Increment view count
+    try {
+      await newsService.incrementViewCount(article.id);
+    } catch (e) {
+      console.error('Failed to increment view count', e);
+    }
+
+    return {
+      article,
+      tags,
+    };
   } catch (error) {
     console.error('Error fetching article:', error);
     return null;
